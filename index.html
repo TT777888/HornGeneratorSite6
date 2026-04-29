@@ -141,6 +141,7 @@
   }
   .step-content { text-align: center; display: none; width: 100%; }
   .step-content.active { display: block; animation: slideUp 0.4s ease forwards; }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
   .step-counter { font-size: 8px; color: #aaa; letter-spacing: 0.3em; margin-bottom: 6px; font-weight: 700; }
   .step-name { font-family: var(--font-logo); font-size: clamp(20px, 6vw, 24px); font-weight: 800; margin-bottom: 20px; letter-spacing: -0.01em; }
@@ -324,11 +325,11 @@ function initDNA() {
         seedX: Math.random() * 10,
         seedZ: Math.random() * 10,
         noiseBase: Array.from({ length: 300 }, () => Math.random()),
-        // 分岐ごとのDNAを配列で管理。位置、角度、長さの個性を持たせる
+        // PC版のサイズ拡大に合わせて、リアルな分岐のためにDNAの乱数要素を調整
         branchDNA: Array.from({ length: 5 }, () => ({
             t: 0.2 + Math.random() * 0.65, // 主幹上の生える位置 (0.2〜0.85)
-            angle: (Math.random() * 2 - 1) * Math.PI * 0.45, // 主幹の成長方向に対する角度
-            lenMult: 0.35 + Math.random() * 0.5, // 主幹に対する長さの比率
+            angle: (Math.random() * 2 - 1) * Math.PI * 0.15, // 主幹の成長方向に対する角度。バラバラすぎないよう範囲を縮小
+            lenMult: 0.2 + Math.random() * 0.3, // 主幹に対する長さの比率。長すぎないよう調整
             curveMult: 0.5 + Math.random() * 1.5 // うねり方の個性
         }))
     };
@@ -392,7 +393,7 @@ function initThree() {
 }
 
 // リアルな動物の角の成長過程を模擬する関数。分岐（isBranch）に対応
-function createGrowingHorn(isBranch = false, startPos = new THREE.Vector3(), startDir = new THREE.Vector3(0,1,0), scale = 1.0, branchDNA = null) {
+function createGrowingHorn(isBranch = false, startPos = new THREE.Vector3(), startDir = new THREE.Vector3(0,1,0), scale = 1.0, bDNA = null) {
   const points = [];
   const segments = 120; // 滑らかな有機的形状のためにセグメントを増やす
   const radialSegments = 32;
@@ -402,9 +403,9 @@ function createGrowingHorn(isBranch = false, startPos = new THREE.Vector3(), sta
   
   //STEP02 CurveとDNAによる成長方向の制御（根本からのうねり）
   const bendStrength = settings.bend * 0.6;
-  const seedX = isBranch ? branchDNA.bendSeedX : dna.seedX;
-  const seedZ = isBranch ? branchDNA.bendSeedZ : dna.seedZ;
-  const curveMult = isBranch ? branchDNA.curveMult : 1.0;
+  const seedX = isBranch ? bDNA.bendSeedX : dna.seedX;
+  const seedZ = isBranch ? bDNA.bendSeedZ : dna.seedZ;
+  const curveMult = isBranch ? bDNA.curveMult : 1.0;
 
   // 成長過程のパス（CatmullRomCurve3）を生成
   for (let i = 0; i <= 20; i++) {
@@ -414,10 +415,10 @@ function createGrowingHorn(isBranch = false, startPos = new THREE.Vector3(), sta
     // 基本の成長方向（Y軸）
     const p = new THREE.Vector3(0, growthTime, 0);
     
-    // DNAに基づいた複雑な３次元的なノイズ（うねり）を付与
-    // 成長に伴って（tが増えるにつれて）うねりが大きくなるように制御
-    let xOffset = Math.sin(growthTime * 0.4 * curveMult + seedX) * bendStrength * Math.pow(t, 1.3) * 3.5;
-    let zOffset = Math.cos(growthTime * 0.4 * curveMult + seedZ) * bendStrength * Math.pow(t, 1.3) * 3.5;
+    // PC版のサイズ拡大に合わせて、うねりを抑制してリアルな有機的形状を模擬
+    // DNAに基づいた複雑な３次元的なノイズ（うねり）を付与。曲がりすぎないようbendStrengthを調整
+    let xOffset = Math.sin(growthTime * 0.4 * curveMult + seedX) * bendStrength * 0.2 * Math.pow(t, 1.3) * 3.5;
+    let zOffset = Math.cos(growthTime * 0.4 * curveMult + seedZ) * bendStrength * 0.2 * Math.pow(t, 1.3) * 3.5;
     
     // 分岐の場合、根本からの生える向き（startDir）に合わせて回転させる
     if (isBranch) {
@@ -427,9 +428,6 @@ function createGrowingHorn(isBranch = false, startPos = new THREE.Vector3(), sta
         // うねりも回転させる
         const offset = new THREE.Vector3(xOffset, 0, zOffset);
         offset.applyQuaternion(quaternion);
-        xOffset = offset.x;
-        //zOffset = offset.z; // Y軸回転ベースだとZは変わらないが、複雑な向きに対応するため
-        // 複雑な生える向きに対応
         p.add(offset); 
     } else {
         p.x += xOffset;
@@ -453,12 +451,13 @@ function createGrowingHorn(isBranch = false, startPos = new THREE.Vector3(), sta
     // DNAのNoiseBaseを使用して、成長に伴う不規則な表面を表現
     const noiseIdx = Math.floor(t * (dna.noiseBase.length - 1));
     const bumpDNA = dna.noiseBase[noiseIdx];
-    const bumpStrength = settings.bump * 0.06;
+    // PC版のサイズ拡大に合わせて表面のデコボコを調整しリアルな有機的形状を模擬
+    const bumpStrength = settings.bump * 0.03;
     const bump = 1 + (bumpDNA - 0.5) * bumpStrength * (1.1 - t); // 先端ほどデコボコを弱く
 
     // 有機的な太さの変化（Pedicleから先細り。Branchは細く）
-    // 単なる先細りではなく、根本の盛り上がり（Pedicle）を表現
-    const r = pedicleRadius * (1.0 - Math.pow(t, 0.9)) * bump * (isBranch ? 0.9 : 1.0);
+    // 単なる先細りではなく、根本の盛り上がり（Pedicle）を表現。PC版に合わせて調整
+    const r = pedicleRadius * Math.pow(1.0 - t, 0.9) * bump * (isBranch ? 0.9 : 1.0);
     
     if (r < 0.001) break; // 先端が細くなりすぎたら終了
 
@@ -506,7 +505,7 @@ function createGrowingHorn(isBranch = false, startPos = new THREE.Vector3(), sta
   geo.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
   geo.setIndex(indices);
   geo.computeVertexNormals();
-  // 表面質感向上
+  // マテリアルの粗さを調整し、リアルな骨に近い質感を表現
   return { mesh: new THREE.Mesh(geo, new THREE.MeshPhysicalMaterial({ color: settings.color, roughness: 0.72, metalness: 0.01, side: 2 })), curve: curve, pedicleRadius: pedicleRadius };
 }
 
@@ -544,10 +543,11 @@ function updateModel() {
         // 2. その垂直ベクトルを主幹のTangent軸で回転（DNAのangle）
         branchBaseDir.applyAxisAngle(branchMainTangent, angle);
         
-        // 接合部のリアルさ: 主幹の内部から分岐を開始させ、表面と一体化させる
-        const branchStartPos = branchStartMainPos.clone(); // 主幹内部の成長点から直接生やす
+        // PC版のサイズ拡大に合わせて、接合部のリアルさを追求
+        // 接合部を主幹のメッシュと完全に一体化させるため、Pedicleを少し盛り上がらせて主幹内部へ食い込ませる
+        const branchStartPos = branchStartMainPos.clone().add(branchBaseDir.clone().multiplyScalar(main.pedicleRadius * -0.2)); 
 
-        // 分岐ごとのDNAとうねり
+        // 分岐ごとのDNAとうねりを調整
         bDNA.bendSeedX = Math.random()*10;
         bDNA.bendSeedZ = Math.random()*10;
 
