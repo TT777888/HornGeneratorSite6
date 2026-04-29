@@ -108,7 +108,7 @@
     display: flex; align-items: center; justify-content: center;
     cursor: pointer; transition: 0.3s;
   }
-  .btn-dl-minimal svg { width: 20px; height: 20px; fill: none; stroke: var(--text-black); stroke-width: 1.3; }
+  .btn-dl-minimal svg { width: 22px; height: 22px; fill: none; stroke: var(--text-black); stroke-width: 1.3; }
 
   /* STEP PANEL */
   #step-panel {
@@ -123,7 +123,7 @@
   .step-nav {
     display: flex; align-items: center; justify-content: center;
     gap: clamp(10px, 4vw, 20px);
-    width: 100%; max-width: 900px; /* PCでの広がりを許容 */
+    width: 100%; max-width: 850px;
   }
   .nav-arrow {
     width: 44px; height: 44px; border-radius: 50%; border: 1px solid #ddd;
@@ -136,47 +136,33 @@
   #steps-container { 
     width: 100%; 
     max-width: 340px; 
-    min-height: 150px; 
-    display: flex; align-items: flex-start; justify-content: center; 
+    min-height: 140px; 
+    display: flex; align-items: center; justify-content: center; 
   }
   .step-content { text-align: center; display: none; width: 100%; }
   .step-content.active { display: block; animation: slideUp 0.4s ease forwards; }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
   .step-counter { font-size: 8px; color: #aaa; letter-spacing: 0.3em; margin-bottom: 6px; font-weight: 700; }
   .step-name { font-family: var(--font-logo); font-size: clamp(20px, 6vw, 24px); font-weight: 800; margin-bottom: 20px; letter-spacing: -0.01em; }
 
-  .slider-wrapper { 
-    position: relative; 
-    padding: 0 5px; 
-    width: 100%; 
-    height: 60px; 
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-  }
-  
-  input[type=range] { -webkit-appearance: none; width: 100%; height: 2px; background: #ddd; outline: none; margin: 10px 0; }
+  .slider-wrapper { position: relative; padding: 0 5px; width: 100%; }
+  input[type=range] { -webkit-appearance: none; width: 100%; height: 2px; background: #ddd; outline: none; }
   input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 22px; height: 22px; background: #000; border-radius: 50%; cursor: pointer; border: 2px solid #fff; }
 
   .range-guides {
     display: flex; justify-content: space-between;
-    margin-top: 0px; font-size: 9px; color: #ccc;
+    margin-top: 10px; font-size: 9px; color: #ccc;
     font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em;
-    height: 12px;
-    line-height: 1;
   }
 
-  .color-grid { 
-    display: flex; gap: clamp(8px, 3vw, 15px); 
-    justify-content: center; align-items: center; 
-    height: 34px;
-    margin: 4px 0; 
-  }
+  .color-grid { display: flex; gap: clamp(8px, 3vw, 15px); justify-content: center; align-items: center; height: 34px; margin-top: 10px; }
   .color-dot { width: 32px; height: 32px; border-radius: 50%; cursor: pointer; border: 1px solid rgba(0,0,0,0.1); position: relative; }
   .color-dot.active { box-shadow: 0 0 0 3px #fff, 0 0 0 5px #000; }
   .color-picker-wrapper { width: 32px; height: 32px; border-radius: 50%; border: 1px solid #ddd; cursor: pointer; background: conic-gradient(red, yellow, lime, aqua, blue, fuchsia, red); position: relative; overflow: hidden; }
   #custom-color { position: absolute; opacity: 0; inset: 0; width: 100%; height: 100%; cursor: pointer; }
 
+  /* REGENERATEボタン スマホ配置 */
   .finish-area { 
     position: fixed;
     bottom: 30px; 
@@ -192,25 +178,16 @@
   }
 
   @media (min-width: 800px) {
-    /* PC版: パラメータ部分を全体的に大きく調整 */
-    #steps-container { 
-      max-width: 400px; /* スライダーの幅を拡大 */
-      margin-top: 15px; /* 位置をさらに若干下げてバランス調整 */
-    }
-    .step-counter { font-size: 10px; margin-bottom: 8px; }
-    .step-name { font-size: 32px; margin-bottom: 25px; } /* ステップ名を拡大 */
-    .range-guides { font-size: 11px; } /* ガイドテキストを拡大 */
-    
-    .step-nav { gap: 80px; } /* 矢印の間隔を少し広げる */
+    .step-nav { gap: 70px; }
     .nav-arrow { width: 54px; height: 54px; font-size: 18px; }
-    #step-panel { padding-top: 25px; height: 300px; } /* パネル全体の高さも微増 */
-    
+    #step-panel { padding-top: 22px; height: 280px; }
     .finish-area { 
       position: absolute; 
       bottom: 35px; 
       right: 40px; 
       left: auto; 
       transform: none; 
+      width: auto; 
     }
     .btn-regen-mobile { padding: 14px 44px; font-size: 10px; }
     .header-logo { top: 25px; left: 30px; }
@@ -283,15 +260,12 @@
         <div class="step-content">
           <p class="step-counter">STEP 05 / 05</p>
           <p class="step-name">COLOR</p>
-          <div class="slider-wrapper">
-            <div class="color-grid" id="palette">
-              <div class="color-dot active" style="background:#ffffff;" data-color="#ffffff"></div>
-              <div class="color-dot" style="background:#f2f2f2;" data-color="#f2f2f2"></div>
-              <div class="color-dot" style="background:#d4a373;" data-color="#d4a373"></div>
-              <div class="color-dot" style="background:#4e4449;" data-color="#4e4449"></div>
-              <div class="color-picker-wrapper"><input type="color" id="custom-color" value="#ffffff"></div>
-            </div>
-            <div class="range-guides" style="visibility: hidden;"><span>-</span><span>-</span></div>
+          <div class="color-grid" id="palette">
+            <div class="color-dot active" style="background:#ffffff;" data-color="#ffffff"></div>
+            <div class="color-dot" style="background:#f2f2f2;" data-color="#f2f2f2"></div>
+            <div class="color-dot" style="background:#d4a373;" data-color="#d4a373"></div>
+            <div class="color-dot" style="background:#4e4449;" data-color="#4e4449"></div>
+            <div class="color-picker-wrapper"><input type="color" id="custom-color" value="#ffffff"></div>
           </div>
         </div>
       </div>
@@ -318,7 +292,8 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { OBJExporter } from "three/addons/exporters/OBJExporter.js";
 
 let settings = { size: 3, bend: 3, bump: 3, branch: 1, color: "#ffffff" };
-let dna = { seedX: Math.random()*5, seedZ: Math.random()*5, noise: Array.from({length: 120}, () => Math.random()) };
+// リアルな分岐のためにDNAの乱数要素を増やす
+let dna = { seedX: Math.random()*10, seedZ: Math.random()*10, noiseBase: Array.from({length: 200}, () => Math.random()), branchDNA: Array.from({length: 5}, () => ({t: Math.random(), angle: Math.random(), lenMult: 0.4+Math.random()*0.3, bendSeed: Math.random()*10})) };
 let currentStep = 0;
 
 window.startApp = () => {
@@ -337,8 +312,9 @@ window.changeStep = (dir) => {
 };
 
 window.newDNA = () => {
-  dna.seedX = Math.random() * 5; dna.seedZ = Math.random() * 5;
-  dna.noise = Array.from({length: 120}, () => Math.random());
+  dna.seedX = Math.random() * 10; dna.seedZ = Math.random() * 10;
+  dna.noiseBase = Array.from({length: 200}, () => Math.random());
+  dna.branchDNA = Array.from({length: 5}, () => ({t: 0.15 + Math.random()*0.7, angle: Math.random()*Math.PI*2, lenMult: 0.3+Math.random()*0.4, bendSeed: Math.random()*10}));
   updateModel();
 };
 
@@ -359,41 +335,63 @@ function initThree() {
   scene = new THREE.Scene();
   scene.background = new THREE.Color(0xffffff);
   camera = new THREE.PerspectiveCamera(40, c.clientWidth/c.clientHeight, 0.1, 1000);
-  camera.position.set(0, 5, 15);
+  camera.position.set(0, 5, 20); // モデル全体が見えるように少し遠ざける
   renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setSize(c.clientWidth, c.clientHeight);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   document.getElementById("three-canvas").appendChild(renderer.domElement);
   controls = new OrbitControls(camera, renderer.domElement);
   controls.enableDamping = true;
-  scene.add(new THREE.AmbientLight(0xffffff, 0.9));
-  const l = new THREE.DirectionalLight(0xffffff, 1.0); l.position.set(10,20,10); scene.add(l);
+  scene.add(new THREE.AmbientLight(0xffffff, 0.7)); // アンビエントを少し弱く
+  const l = new THREE.DirectionalLight(0xffffff, 1.2); l.position.set(10,20,10); scene.add(l); // ディレクショナルを強く
   hornGroup = new THREE.Group();
   scene.add(hornGroup);
   animate();
   updateModel();
 }
 
-function createSolidHorn(isBranch = false, startPos = new THREE.Vector3(), scale = 1.0, bId = 0) {
+// リアルな角の生成関数。分岐（isBranch）に対応
+function createSolidHorn(isBranch = false, startPos = new THREE.Vector3(), startNormal = new THREE.Vector3(0,1,0), scale = 1.0, branchId = 0) {
   const points = [];
-  const segments = 60; 
-  const radialSegments = 24;
-  const len = settings.size * 1.5 * scale;
-  const bS = settings.bend * 0.4;
-  for (let i = 0; i <= 10; i++) {
-    const t = i/10;
-    let x = !isBranch ? Math.sin(t*Math.PI*0.4 + dna.seedX)*bS*t*2.5 : Math.cos((bId/settings.branch)*Math.PI*2 + dna.seedX)*(t*2.2);
-    let z = !isBranch ? Math.cos(t*Math.PI*0.4 + dna.seedZ)*bS*t*2.5 : Math.sin((bId/settings.branch)*Math.PI*2 + dna.seedX)*(t*2.2);
-    points.push(new THREE.Vector3(x, t*len, z).add(startPos));
+  const segments = 100; // 有機的な形状のためにセグメントを増やす
+  const radialSegments = 32;
+  const len = settings.size * 1.8 * scale; // 基本の長さ
+  const bS = settings.bend * 0.5 * (isBranch ? 0.7 : 1.0); // 曲がり具合。分岐は少し緩やかに
+  const bendSeed = isBranch ? dna.branchDNA[branchId].bendSeed : dna.seedX;
+
+  // カーブの生成（添付画像のような、主カーブ＋うねり）
+  for (let i = 0; i <= 20; i++) {
+    const t = i/20;
+    // 主な曲がり
+    let x = Math.sin(t*Math.PI*0.35 + dna.seedX)*bS*t*2.8;
+    let z = Math.cos(t*Math.PI*0.35 + dna.seedZ)*bS*t*2.8;
+    // Branch用のDNAによるうねり
+    if (isBranch) {
+        x += Math.sin(t*Math.PI*2 + bendSeed)*0.2*t;
+        z += Math.cos(t*Math.PI*2 + bendSeed)*0.2*t;
+    }
+    const p = new THREE.Vector3(x, t*len, z);
+    
+    // 分岐の場合、生える向き（startNormal）に合わせて回転させる
+    if (isBranch) {
+        const quaternion = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), startNormal.clone().normalize());
+        p.applyQuaternion(quaternion);
+    }
+    points.push(p.add(startPos));
   }
   const curve = new THREE.CatmullRomCurve3(points);
-  const baseR = (isBranch ? 0.2 : 0.45) * (settings.size*0.08 + 0.9);
+  
+  // 太さの計算。有機的な先細り。 Branchは細く
+  const baseR = (isBranch ? 0.18 : 0.55) * (settings.size*0.07 + 0.9);
   const vertices = [], indices = [], frames = curve.computeFrenetFrames(segments, false);
 
   for (let i = 0; i <= segments; i++) {
     const t = i/segments;
-    const bump = 1 + (Math.sin(t*30)*0.5 + (dna.noise[i%120]-0.5))*(settings.bump*0.04)*(1-t);
-    const r = baseR * Math.pow(1-t,0.9)*bump;
+    // 添付画像のような、リアルなデコボコ（Bump）をDNAのNoiseBaseで表現
+    const noiseIdx = Math.floor(t * (dna.noiseBase.length - 1));
+    const bumpDNA = dna.noiseBase[noiseIdx];
+    const bump = 1 + (bumpDNA - 0.5)*(settings.bump*0.05)*(1-t*0.7); // 先端ほどデコボコを弱く
+    const r = baseR * Math.pow(1-t, isBranch ? 1.0 : 0.8)*bump; // 有機的な減衰
     const p = curve.getPointAt(t);
     const n = frames.normals[i], b = frames.binormals[i];
     for (let j = 0; j <= radialSegments; j++) {
@@ -402,6 +400,8 @@ function createSolidHorn(isBranch = false, startPos = new THREE.Vector3(), scale
       vertices.push(v.x, v.y, v.z);
     }
   }
+  
+  // 側面ポリゴン
   for (let i = 0; i < segments; i++) {
     for (let j = 0; j < radialSegments; j++) {
       const a = i*(radialSegments+1)+j, b = (i+1)*(radialSegments+1)+j;
@@ -410,26 +410,30 @@ function createSolidHorn(isBranch = false, startPos = new THREE.Vector3(), scale
     }
   }
 
-  const bottomCenterIdx = vertices.length / 3;
-  const bottomPos = curve.getPointAt(0);
-  vertices.push(bottomPos.x, bottomPos.y, bottomPos.z);
-  for (let j = 0; j < radialSegments; j++) {
-    indices.push(bottomCenterIdx, j, j + 1);
+  // 底面閉鎖（branchの場合は接合部なので塞がない、宙に浮かせない）
+  if (!isBranch) {
+    const bottomCenterIdx = vertices.length / 3;
+    const bottomPos = curve.getPointAt(0);
+    vertices.push(bottomPos.x, bottomPos.y, bottomPos.z);
+    for (let j = 0; j < radialSegments; j++) {
+        indices.push(bottomCenterIdx, j + 1, j);
+    }
   }
 
+  // 先端閉鎖（円錐ではなくリアルな尖り）
   const topCenterIdx = vertices.length / 3;
   const topPos = curve.getPointAt(1);
   vertices.push(topPos.x, topPos.y, topPos.z);
   const lastRingStart = segments * (radialSegments + 1);
   for (let j = 0; j < radialSegments; j++) {
-    indices.push(topCenterIdx, lastRingStart + j + 1, lastRingStart + j);
+    indices.push(topCenterIdx, lastRingStart + j, lastRingStart + j + 1);
   }
 
   const geo = new THREE.BufferGeometry();
   geo.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
   geo.setIndex(indices);
   geo.computeVertexNormals();
-  return { mesh: new THREE.Mesh(geo, new THREE.MeshPhysicalMaterial({ color: settings.color, roughness: 0.5, metalness: 0.05, side: 2 })), curve: curve };
+  return { mesh: new THREE.Mesh(geo, new THREE.MeshPhysicalMaterial({ color: settings.color, roughness: 0.65, metalness: 0.02, side: 2 })), curve: curve, baseRadius: baseR };
 }
 
 function updateModel() {
@@ -437,11 +441,45 @@ function updateModel() {
   while(hornGroup.children.length > 0) {
     const c = hornGroup.children[0]; c.geometry.dispose(); c.material.dispose(); hornGroup.remove(c);
   }
+  
+  // 主の枝
   const main = createSolidHorn();
   hornGroup.add(main.mesh);
-  for (let i = 0; i < settings.branch-1; i++) {
-    hornGroup.add(createSolidHorn(true, main.curve.getPointAt(0.2+i*0.2), 0.5, i).mesh);
+  
+  // リアルな分岐（Branch）の生成ロジック
+  // STEP04の値（settings.branch）に応じてBranchを追加
+  if (settings.branch > 1) {
+    const numBranches = settings.branch - 1;
+    for (let i = 0; i < numBranches; i++) {
+        // DNAからBranchのパラメータを取得
+        const branchDNA = dna.branchDNA[i];
+        const t = branchDNA.t; // 主の枝上の位置
+        const angle = branchDNA.angle; // 生える角度
+        const lenMult = branchDNA.lenMult; // 長さの倍率
+
+        const branchStartMainPos = main.curve.getPointAt(t);
+        const branchTangent = main.curve.getTangentAt(t);
+        
+        // 主の枝の太さ（Radius）を考慮して、表面から生やす（接合部のリアルさ）
+        const bumpDNA = dna.noiseBase[Math.floor(t * (dna.noiseBase.length - 1))];
+        const bump = 1 + (bumpDNA - 0.5)*(settings.bump*0.05)*(1-t*0.7);
+        const mainR = main.baseRadius * Math.pow(1-t, 0.8)*bump;
+        
+        // 分岐の向き（主の枝の接線に対する垂直ベクトルからランダム角度）
+        const normal = new THREE.Vector3(0,1,0);
+        if (Math.abs(branchTangent.y) < 0.9) normal.set(0,1,0); else normal.set(1,0,0);
+        const branchNormal = normal.cross(branchTangent).normalize();
+        branchNormal.applyAxisAngle(branchTangent, angle);
+
+        const branchStartPos = branchStartMainPos.clone().add(branchNormal.clone().multiplyScalar(mainR * 0.95)); // 少し食い込ませて接合
+
+        // Branchモデルの生成。 startNormalで生える向きを指定
+        const branch = createSolidHorn(true, branchStartPos, branchNormal, lenMult * (1.0-t*0.6), i); // 先端ほどBranchは小さく
+        hornGroup.add(branch.mesh);
+    }
   }
+
+  // 中心合わせ
   const box = new THREE.Box3().setFromObject(hornGroup);
   const center = new THREE.Vector3(); box.getCenter(center);
   hornGroup.children.forEach(m => m.position.sub(center));
