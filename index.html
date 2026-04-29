@@ -317,251 +317,350 @@ import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { OBJExporter } from "three/addons/exporters/OBJExporter.js";
 
-let settings = { size: 3, bend: 3, bump: 3, branch: 1, color: "#ffffff" };
+let settings = {
+  size: 3,
+  bend: 3,
+  bump: 3,
+  branch: 1,
+  color: "#ffffff"
+};
+
 let dna;
-// DNA初期化関数
+let currentStep = 0;
+let scene, camera, renderer, controls, hornGroup;
+
 function initDNA() {
-    dna = {
-        seedX: Math.random() * 10,
-        seedZ: Math.random() * 10,
-        noiseBase: Array.from({ length: 300 }, () => Math.random()),
-        // PC版のサイズ拡大に合わせて、リアルな分岐のためにDNAの乱数要素を調整
-        branchDNA: Array.from({ length: 5 }, () => ({
-            t: 0.2 + Math.random() * 0.65, // 主幹上の生える位置 (0.2〜0.85)
-            angle: (Math.random() * 2 - 1) * Math.PI * 0.15, // 主幹の成長方向に対する角度。バラバラすぎないよう範囲を縮小
-            lenMult: 0.2 + Math.random() * 0.3, // 主幹に対する長さの比率。長すぎないよう調整
-            curveMult: 0.5 + Math.random() * 1.5 // うねり方の個性
-        }))
-    };
-    // リアルな生え方のために、t（生える位置）でソートしておく
-    dna.branchDNA.sort((a, b) => a.t - b.t);
+  dna = {
+    twist: Math.random() * Math.PI * 2,
+    wobble: Math.random() * 10,
+    branchDNA: Array.from({ length: 5 }, (_, i) => ({
+      offset: (Math.random() - 0.5) * 0.035,
+      length: 0.9 + Math.random() * 0.35,
+      lift: 0.85 + Math.random() * 0.4,
+      side: i % 2 === 0 ? 1 : -1
+    }))
+  };
 }
+
 initDNA();
 
-let currentStep = 0;
-
 window.startApp = () => {
-  document.getElementById('intro-page').classList.remove('active');
-  document.getElementById('main-page').classList.add('active');
+  document.getElementById("intro-page").classList.remove("active");
+  document.getElementById("main-page").classList.add("active");
   initThree();
 };
 
 window.changeStep = (dir) => {
-  const steps = document.querySelectorAll('.step-content');
-  steps[currentStep].classList.remove('active');
+  const steps = document.querySelectorAll(".step-content");
+  steps[currentStep].classList.remove("active");
+
   currentStep = Math.max(0, Math.min(steps.length - 1, currentStep + dir));
-  steps[currentStep].classList.add('active');
-  document.getElementById('prev-btn').classList.toggle('disabled', currentStep === 0);
-  document.getElementById('next-btn').classList.toggle('disabled', currentStep === steps.length - 1);
+
+  steps[currentStep].classList.add("active");
+  document.getElementById("prev-btn").classList.toggle("disabled", currentStep === 0);
+  document.getElementById("next-btn").classList.toggle("disabled", currentStep === steps.length - 1);
 };
 
 window.newDNA = () => {
-  initDNA(); // DNAを再初期化
+  initDNA();
   updateModel();
 };
 
 window.downloadModel = () => {
   const exporter = new OBJExporter();
-  const res = exporter.parse(hornGroup);
-  const blob = new Blob([res], { type: 'text/plain' });
-  const a = document.createElement('a');
+  const result = exporter.parse(hornGroup);
+  const blob = new Blob([result], { type: "text/plain" });
+
+  const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
-  a.download = 'tsuno_model.obj';
+  a.download = "tsuno_model.obj";
   a.click();
 };
 
-let scene, camera, renderer, controls, hornGroup;
-
 function initThree() {
-  const c = document.getElementById("viewer-container");
+  const container = document.getElementById("viewer-container");
+
   scene = new THREE.Scene();
   scene.background = new THREE.Color(0xffffff);
-  camera = new THREE.PerspectiveCamera(40, c.clientWidth/c.clientHeight, 0.1, 1000);
-  camera.position.set(0, 5, 22); 
+
+  camera = new THREE.PerspectiveCamera(
+    40,
+    container.clientWidth / container.clientHeight,
+    0.1,
+    1000
+  );
+  camera.position.set(0, 4.5, 24);
+
   renderer = new THREE.WebGLRenderer({ antialias: true });
-  renderer.setSize(c.clientWidth, c.clientHeight);
+  renderer.setSize(container.clientWidth, container.clientHeight);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-  document.getElementById("three-canvas").appendChild(renderer.domElement);
+
+  const canvasWrap = document.getElementById("three-canvas");
+  canvasWrap.innerHTML = "";
+  canvasWrap.appendChild(renderer.domElement);
+
   controls = new OrbitControls(camera, renderer.domElement);
   controls.enableDamping = true;
-  scene.add(new THREE.AmbientLight(0xffffff, 0.6)); 
-  const l = new THREE.DirectionalLight(0xffffff, 1.3); l.position.set(10,20,10); scene.add(l);
+  controls.enablePan = false;
+  controls.target.set(0, 0, 0);
+
+  scene.add(new THREE.AmbientLight(0xffffff, 1.15));
+
+  const key = new THREE.DirectionalLight(0xffffff, 1.7);
+  key.position.set(10, 18, 12);
+  scene.add(key);
+
+  const fill = new THREE.DirectionalLight(0xdde8ff, 0.7);
+  fill.position.set(-10, 8, -10);
+  scene.add(fill);
+
+  const rim = new THREE.DirectionalLight(0xfff1e6, 0.6);
+  rim.position.set(0, 10, -16);
+  scene.add(rim);
+
   hornGroup = new THREE.Group();
   scene.add(hornGroup);
-  animate();
+
   updateModel();
+  animate();
 }
 
-// リアルな動物の角の成長過程を模擬する関数。分岐（isBranch）に対応
-function createGrowingHorn(isBranch = false, startPos = new THREE.Vector3(), startDir = new THREE.Vector3(0,1,0), scale = 1.0, bDNA = null) {
-  const points = [];
-  const segments = 120; // 滑らかな有機的形状のためにセグメントを増やす
-  const radialSegments = 32;
-  
-  // STEP01 Sizeを反映
-  const totalGrowthTime = settings.size * 2.0 * scale; 
-  
-  //STEP02 CurveとDNAによる成長方向の制御（根本からのうねり）
-  const bendStrength = settings.bend * 0.6;
-  const seedX = isBranch ? bDNA.bendSeedX : dna.seedX;
-  const seedZ = isBranch ? bDNA.bendSeedZ : dna.seedZ;
-  const curveMult = isBranch ? bDNA.curveMult : 1.0;
+function antlerMaterial() {
+  return new THREE.MeshPhysicalMaterial({
+    color: settings.color,
+    roughness: 0.68,
+    metalness: 0.0,
+    clearcoat: 0.12,
+    clearcoatRoughness: 0.55,
+    side: THREE.DoubleSide
+  });
+}
 
-  // 成長過程のパス（CatmullRomCurve3）を生成
-  for (let i = 0; i <= 20; i++) {
-    const t = i / 20;
-    const growthTime = t * totalGrowthTime;
-    
-    // 基本の成長方向（Y軸）
-    const p = new THREE.Vector3(0, growthTime, 0);
-    
-    // PC版のサイズ拡大に合わせて、うねりを抑制してリアルな有機的形状を模擬
-    // DNAに基づいた複雑な３次元的なノイズ（うねり）を付与。曲がりすぎないようbendStrengthを調整
-    let xOffset = Math.sin(growthTime * 0.4 * curveMult + seedX) * bendStrength * 0.2 * Math.pow(t, 1.3) * 3.5;
-    let zOffset = Math.cos(growthTime * 0.4 * curveMult + seedZ) * bendStrength * 0.2 * Math.pow(t, 1.3) * 3.5;
-    
-    // 分岐の場合、根本からの生える向き（startDir）に合わせて回転させる
-    if (isBranch) {
-        // 主幹の成長方向（Y軸）と分岐の初期生える向き（startDir）の間の回転を取得
-        const quaternion = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), startDir.clone().normalize());
-        p.applyQuaternion(quaternion);
-        // うねりも回転させる
-        const offset = new THREE.Vector3(xOffset, 0, zOffset);
-        offset.applyQuaternion(quaternion);
-        p.add(offset); 
-    } else {
-        p.x += xOffset;
-        p.z += zOffset;
-    }
+function mainCurve() {
+  const size = 4.8 + settings.size * 1.55;
+  const bend = 1.0 + settings.bend * 0.58;
 
-    points.push(p.add(startPos));
-  }
-  const curve = new THREE.CatmullRomCurve3(points);
-  
-  //STEP01 Sizeと有機的な太さの変化（根本が太く、滑らかに先細る）
-  const pedicleRadius = (isBranch ? 0.2 : 0.6) * (settings.size * 0.08 + 0.9);
-  
-  const vertices = [], indices = [], frames = curve.computeFrenetFrames(segments, false);
+  return new THREE.CatmullRomCurve3([
+    new THREE.Vector3(0, 0, 0),
+    new THREE.Vector3(-bend * 0.75, size * 0.16, 0.05),
+    new THREE.Vector3(-bend * 1.85, size * 0.38, 0.35),
+    new THREE.Vector3(-bend * 1.65, size * 0.58, 0.22),
+    new THREE.Vector3(-bend * 0.35, size * 0.78, 0.02),
+    new THREE.Vector3(bend * 1.28, size * 0.98, -0.08)
+  ], false, "catmullrom", 0.45);
+}
 
-  // メッシュの頂点を生成
-  for (let i = 0; i <= segments; i++) {
-    const t = i / segments;
-    
-    //STEP03 BumpとDNAによるデコボコ（表面の質感）
-    // DNAのNoiseBaseを使用して、成長に伴う不規則な表面を表現
-    const noiseIdx = Math.floor(t * (dna.noiseBase.length - 1));
-    const bumpDNA = dna.noiseBase[noiseIdx];
-    // PC版のサイズ拡大に合わせて表面のデコボコを調整しリアルな有機的形状を模擬
-    const bumpStrength = settings.bump * 0.03;
-    const bump = 1 + (bumpDNA - 0.5) * bumpStrength * (1.1 - t); // 先端ほどデコボコを弱く
+function radiusProfile(baseRadius, t, bumpPower) {
+  const taper = Math.pow(1 - t, 1.42);
+  const roundedTip = 0.035;
 
-    // 有機的な太さの変化（Pedicleから先細り。Branchは細く）
-    // 単なる先細りではなく、根本の盛り上がり（Pedicle）を表現。PC版に合わせて調整
-    const r = pedicleRadius * Math.pow(1.0 - t, 0.9) * bump * (isBranch ? 0.9 : 1.0);
-    
-    if (r < 0.001) break; // 先端が細くなりすぎたら終了
+  const ring =
+    Math.sin(t * Math.PI * 34) * bumpPower * 0.075 +
+    Math.sin(t * Math.PI * 91 + dna.wobble) * bumpPower * 0.025;
 
-    const p = curve.getPointAt(t);
-    const n = frames.normals[i], b = frames.binormals[i];
+  return Math.max(baseRadius * taper * (1 + ring), roundedTip);
+}
+
+function createTaperedMesh(curve, baseRadius, bumpPower, radialSegments = 34, heightSegments = 150) {
+  const frames = curve.computeFrenetFrames(heightSegments, false);
+
+  const vertices = [];
+  const normals = [];
+  const uvs = [];
+  const indices = [];
+
+  for (let i = 0; i <= heightSegments; i++) {
+    const t = i / heightSegments;
+    const center = curve.getPointAt(t);
+    const normal = frames.normals[i];
+    const binormal = frames.binormals[i];
+
+    const radius = radiusProfile(baseRadius, t, bumpPower);
+
     for (let j = 0; j <= radialSegments; j++) {
-      const theta = (j / radialSegments) * Math.PI * 2;
-      const v = new THREE.Vector3().copy(p).add(n.clone().multiplyScalar(Math.cos(theta) * r)).add(b.clone().multiplyScalar(Math.sin(theta) * r));
-      vertices.push(v.x, v.y, v.z);
+      const v = j / radialSegments;
+      const angle = v * Math.PI * 2;
+
+      const ovalX = Math.cos(angle) * radius * 1.04;
+      const ovalY = Math.sin(angle) * radius * 0.96;
+
+      const p = new THREE.Vector3()
+        .copy(center)
+        .addScaledVector(normal, ovalX)
+        .addScaledVector(binormal, ovalY);
+
+      vertices.push(p.x, p.y, p.z);
+
+      const n = new THREE.Vector3()
+        .addScaledVector(normal, ovalX)
+        .addScaledVector(binormal, ovalY)
+        .normalize();
+
+      normals.push(n.x, n.y, n.z);
+      uvs.push(v, t);
     }
   }
 
-  // 側面ポリゴン
-  const numRings = vertices.length / 3 / (radialSegments + 1) - 1;
-  for (let i = 0; i < numRings; i++) {
+  for (let i = 0; i < heightSegments; i++) {
     for (let j = 0; j < radialSegments; j++) {
       const a = i * (radialSegments + 1) + j;
-      const b = (i + 1) * (radialSegments + 1) + j;
-      const c = (i + 1) * (radialSegments + 1) + (j + 1);
-      const d = i * (radialSegments + 1) + (j + 1);
-      indices.push(a, b, d, b, c, d);
-    }
-  }
+      const b = a + radialSegments + 1;
+      const c = b + 1;
+      const d = a + 1;
 
-  // 底面閉鎖（branchの場合は主幹と接合するので塞がない。Pedicleから主幹内部へ食い込ませる）
-  if (!isBranch) {
-    const bottomCenterIdx = vertices.length / 3;
-    const bottomPos = curve.getPointAt(0);
-    vertices.push(bottomPos.x, bottomPos.y, bottomPos.z);
-    for (let j = 0; j < radialSegments; j++) {
-        indices.push(bottomCenterIdx, j, j + 1);
+      indices.push(a, b, d);
+      indices.push(b, c, d);
     }
-  }
-
-  // 先端閉鎖（円錐ではなくリアルな尖り）
-  const topCenterIdx = vertices.length / 3;
-  const topPos = curve.getPointAt(vertices.length/3 > segments * (radialSegments+1) ? 1.0 : (vertices.length/3 / (radialSegments+1) / segments)); // 途中で終了した場合に対応
-  vertices.push(topPos.x, topPos.y, topPos.z);
-  const lastRingStart = (Math.floor(vertices.length / 3 / (radialSegments + 1)) - 2) * (radialSegments + 1);
-  for (let j = 0; j < radialSegments; j++) {
-    indices.push(topCenterIdx, lastRingStart + j + 1, lastRingStart + j);
   }
 
   const geo = new THREE.BufferGeometry();
-  geo.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+  geo.setAttribute("position", new THREE.Float32BufferAttribute(vertices, 3));
+  geo.setAttribute("normal", new THREE.Float32BufferAttribute(normals, 3));
+  geo.setAttribute("uv", new THREE.Float32BufferAttribute(uvs, 2));
   geo.setIndex(indices);
   geo.computeVertexNormals();
-  // マテリアルの粗さを調整し、リアルな骨に近い質感を表現
-  return { mesh: new THREE.Mesh(geo, new THREE.MeshPhysicalMaterial({ color: settings.color, roughness: 0.72, metalness: 0.01, side: 2 })), curve: curve, pedicleRadius: pedicleRadius };
+
+  return new THREE.Mesh(geo, antlerMaterial());
+}
+
+function curveFrame(curve, t) {
+  const point = curve.getPointAt(t);
+  const tangent = curve.getTangentAt(t).normalize();
+
+  let outward = new THREE.Vector3().crossVectors(tangent, new THREE.Vector3(0, 0, 1));
+  if (outward.length() < 0.001) outward.set(1, 0, 0);
+  outward.normalize();
+
+  return { point, tangent, outward };
+}
+
+function branchCurveFromMain(curve, index, total) {
+  const basePositions = [0.22, 0.42, 0.60, 0.75, 0.86];
+  const bd = dna.branchDNA[index];
+
+  const t = Math.min(0.92, Math.max(0.12, basePositions[index] + bd.offset));
+  const { point, tangent, outward } = curveFrame(curve, t);
+
+  const size = 4.8 + settings.size * 1.55;
+  const side = bd.side;
+  const length = size * (0.28 + index * 0.04) * bd.length;
+  const up = new THREE.Vector3(0, 1, 0);
+
+  const dir = new THREE.Vector3()
+    .addScaledVector(tangent, 0.20)
+    .addScaledVector(outward, side * (0.82 + index * 0.08))
+    .addScaledVector(up, bd.lift)
+    .normalize();
+
+  const p0 = point.clone().addScaledVector(outward, side * -0.10);
+  const p1 = point.clone().addScaledVector(dir, length * 0.24);
+  const p2 = point.clone().addScaledVector(dir, length * 0.62);
+  const p3 = point.clone().addScaledVector(dir, length);
+
+  p1.y += length * 0.02;
+  p2.y += length * 0.10;
+  p3.y += length * 0.22;
+
+  p2.addScaledVector(outward, side * length * 0.06);
+  p3.addScaledVector(outward, side * length * 0.10);
+
+  return {
+    curve: new THREE.CatmullRomCurve3([p0, p1, p2, p3], false, "catmullrom", 0.45),
+    root: point
+  };
+}
+
+function createJointBulge(position, radius) {
+  const geo = new THREE.SphereGeometry(radius, 32, 18);
+  const mesh = new THREE.Mesh(geo, antlerMaterial());
+
+  mesh.position.copy(position);
+  mesh.scale.set(1.45, 0.86, 1.05);
+
+  return mesh;
+}
+
+function createBaseRing(position, radius) {
+  const ring = new THREE.Mesh(
+    new THREE.TorusGeometry(radius * 0.82, radius * 0.08, 12, 48),
+    antlerMaterial()
+  );
+
+  ring.rotation.x = Math.PI / 2;
+  ring.position.copy(position);
+
+  return ring;
+}
+
+function disposeObject(obj) {
+  obj.traverse?.((child) => {
+    if (child.geometry) child.geometry.dispose();
+    if (child.material) {
+      if (Array.isArray(child.material)) {
+        child.material.forEach((m) => m.dispose());
+      } else {
+        child.material.dispose();
+      }
+    }
+  });
 }
 
 function updateModel() {
-  if(!hornGroup) return;
-  while(hornGroup.children.length > 0) {
-    const c = hornGroup.children[0]; c.geometry.dispose(); c.material.dispose(); hornGroup.remove(c);
-  }
-  
-  // 主幹（Main Beam）
-  const main = createGrowingHorn();
-  hornGroup.add(main.mesh);
-  
-  // リアルな分岐（Branches / Tines）の生成
-  // STEP04の値（settings.branch）に応じて分岐を追加
-  if (settings.branch > 1) {
-    const numBranches = settings.branch - 1;
-    for (let i = 0; i < numBranches; i++) {
-        // DNAから分岐のパラメータを取得
-        const bDNA = dna.branchDNA[i];
-        const t = bDNA.t; // 主幹上の生える位置
-        const angle = bDNA.angle; // 生える角度
-        const lenMult = bDNA.lenMult; // 長さの比率
+  if (!hornGroup) return;
 
-        // 主幹上の成長点（ CatmullRomCurve3上の点）を取得
-        const branchStartMainPos = main.curve.getPointAt(t);
-        // その点における主幹の成長方向（接線）
-        const branchMainTangent = main.curve.getTangentAt(t);
-        
-        // 分岐の向き（startDir）の計算。主幹の成長方向を基準に、DNAに基づいて外側へ分岐
-        // 1. 主幹のTangentに対する垂直ベクトルを取得
-        const normal = new THREE.Vector3(0,1,0);
-        if (Math.abs(branchMainTangent.y) < 0.9) normal.set(0,1,0); else normal.set(1,0,0);
-        const branchBaseDir = normal.cross(branchMainTangent).normalize();
-        // 2. その垂直ベクトルを主幹のTangent軸で回転（DNAのangle）
-        branchBaseDir.applyAxisAngle(branchMainTangent, angle);
-        
-        // PC版のサイズ拡大に合わせて、接合部のリアルさを追求
-        // 接合部を主幹のメッシュと完全に一体化させるため、Pedicleを少し盛り上がらせて主幹内部へ食い込ませる
-        const branchStartPos = branchStartMainPos.clone().add(branchBaseDir.clone().multiplyScalar(main.pedicleRadius * -0.2)); 
-
-        // 分岐ごとのDNAとうねりを調整
-        bDNA.bendSeedX = Math.random()*10;
-        bDNA.bendSeedZ = Math.random()*10;
-
-        // 分岐（isBranch）モデルの生成。長さ、太さは主幹より細く
-        const branch = createGrowingHorn(true, branchStartPos, branchBaseDir, lenMult, bDNA); 
-        hornGroup.add(branch.mesh);
-    }
+  while (hornGroup.children.length > 0) {
+    const child = hornGroup.children[0];
+    hornGroup.remove(child);
+    disposeObject(child);
   }
 
-  // 中心合わせ
+  const curve = mainCurve();
+
+  const bumpPower = settings.bump / 5;
+  const mainRadius = 0.42 + settings.size * 0.065;
+
+  const mainMesh = createTaperedMesh(
+    curve,
+    mainRadius,
+    bumpPower,
+    38,
+    170
+  );
+  hornGroup.add(mainMesh);
+
+  const branchCount = Math.max(0, settings.branch - 1);
+
+  for (let i = 0; i < branchCount; i++) {
+    const data = branchCurveFromMain(curve, i, branchCount);
+    const branchRadius = Math.max(0.13, mainRadius * (0.45 - i * 0.035));
+
+    const joint = createJointBulge(data.root, branchRadius * 1.55);
+    const branch = createTaperedMesh(
+      data.curve,
+      branchRadius,
+      bumpPower * 0.78,
+      28,
+      105
+    );
+
+    hornGroup.add(joint);
+    hornGroup.add(branch);
+  }
+
+  hornGroup.add(createBaseRing(curve.getPointAt(0), mainRadius));
+
   const box = new THREE.Box3().setFromObject(hornGroup);
-  const center = new THREE.Vector3(); box.getCenter(center);
-  hornGroup.children.forEach(m => m.position.sub(center));
+  const center = new THREE.Vector3();
+  box.getCenter(center);
+
+  hornGroup.children.forEach((m) => {
+    m.position.sub(center);
+  });
+
+  hornGroup.rotation.set(0, 0, -0.12);
+
   controls.target.set(0, 0, 0);
+  controls.update();
 }
 
 function animate() {
@@ -570,24 +669,31 @@ function animate() {
   if (renderer) renderer.render(scene, camera);
 }
 
-['size', 'bend', 'bump', 'branch'].forEach(id => {
-  const el = document.getElementById('i-' + id);
-  if (el) el.oninput = (e) => { settings[id] = parseInt(e.target.value); updateModel(); };
+["size", "bend", "bump", "branch"].forEach((id) => {
+  const el = document.getElementById("i-" + id);
+  if (!el) return;
+
+  el.oninput = (e) => {
+    settings[id] = parseInt(e.target.value, 10);
+    updateModel();
+  };
 });
 
-document.getElementById('palette').onclick = (e) => {
-  if (e.target.classList.contains('color-dot')) {
-    const activeDot = document.querySelector('.color-dot.active');
-    if (activeDot) activeDot.classList.remove('active');
-    e.target.classList.add('active');
+document.getElementById("palette").onclick = (e) => {
+  if (e.target.classList.contains("color-dot")) {
+    const active = document.querySelector(".color-dot.active");
+    if (active) active.classList.remove("active");
+
+    e.target.classList.add("active");
     settings.color = e.target.dataset.color;
     updateModel();
   }
 };
 
-document.getElementById('custom-color').oninput = (e) => {
-  const activeDot = document.querySelector('.color-dot.active');
-  if (activeDot) activeDot.classList.remove('active');
+document.getElementById("custom-color").oninput = (e) => {
+  const active = document.querySelector(".color-dot.active");
+  if (active) active.classList.remove("active");
+
   settings.color = e.target.value;
   updateModel();
 };
@@ -595,7 +701,8 @@ document.getElementById('custom-color').oninput = (e) => {
 window.onresize = () => {
   const c = document.getElementById("viewer-container");
   if (!c || !camera || !renderer) return;
-  camera.aspect = c.clientWidth/c.clientHeight;
+
+  camera.aspect = c.clientWidth / c.clientHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(c.clientWidth, c.clientHeight);
 };
