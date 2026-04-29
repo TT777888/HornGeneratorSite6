@@ -32,12 +32,14 @@
   }
   .page.active { display: flex; opacity: 1; z-index: 10; }
 
+  /* ── TYPOGRAPHY ── */
   .typo-logo {
     font-family: var(--font-logo);
     font-weight: 800; text-transform: uppercase;
     line-height: 1.1;
   }
 
+  /* ── START SCREEN ── */
   #intro-page {
     background: var(--bg-white);
     justify-content: center; align-items: center;
@@ -86,6 +88,7 @@
   }
   @media (hover: hover) { .btn-ui-main:hover { transform: scale(1.06); opacity: 0.9; } }
 
+  /* ── MAIN CUSTOMIZER ── */
   #main-page { display: flex; flex-direction: column; }
   #viewer-container { flex: 1; background: #fff; position: relative; }
 
@@ -107,6 +110,7 @@
   }
   .btn-dl-minimal svg { width: 20px; height: 20px; fill: none; stroke: var(--text-black); stroke-width: 1.3; }
 
+  /* STEP PANEL */
   #step-panel {
     height: 260px; background: var(--panel-bg);
     border-top: 1px solid var(--border);
@@ -137,13 +141,19 @@
   }
   .step-content { text-align: center; display: none; width: 100%; }
   .step-content.active { display: block; animation: slideUp 0.4s ease forwards; }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
   .step-counter { font-size: 8px; color: #aaa; letter-spacing: 0.3em; margin-bottom: 6px; font-weight: 700; }
   .step-name { font-family: var(--font-logo); font-size: clamp(20px, 6vw, 24px); font-weight: 800; margin-bottom: 20px; letter-spacing: -0.01em; }
 
   .slider-wrapper { 
-    position: relative; padding: 0 5px; width: 100%; height: 60px; 
-    display: flex; flex-direction: column; justify-content: center;
+    position: relative; 
+    padding: 0 5px; 
+    width: 100%; 
+    height: 60px; 
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
   }
   
   input[type=range] { -webkit-appearance: none; width: 100%; height: 2px; background: #ddd; outline: none; margin: 10px 0; }
@@ -153,13 +163,15 @@
     display: flex; justify-content: space-between;
     margin-top: 0px; font-size: 9px; color: #ccc;
     font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em;
-    height: 12px; line-height: 1;
+    height: 12px;
+    line-height: 1;
   }
 
   .color-grid { 
     display: flex; gap: clamp(8px, 3vw, 15px); 
     justify-content: center; align-items: center; 
-    height: 34px; margin: 4px 0; 
+    height: 34px;
+    margin: 4px 0; 
   }
   .color-dot { width: 32px; height: 32px; border-radius: 50%; cursor: pointer; border: 1px solid rgba(0,0,0,0.1); position: relative; }
   .color-dot.active { box-shadow: 0 0 0 3px #fff, 0 0 0 5px #000; }
@@ -167,20 +179,39 @@
   #custom-color { position: absolute; opacity: 0; inset: 0; width: 100%; height: 100%; cursor: pointer; }
 
   .finish-area { 
-    position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
-    z-index: 1000; width: auto;
+    position: fixed;
+    bottom: 30px; 
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    width: auto;
   }
-  .btn-regen-mobile { padding: 10px 22px; font-size: 9px; white-space: nowrap; }
+  .btn-regen-mobile {
+    padding: 10px 22px;
+    font-size: 9px;
+    white-space: nowrap;
+  }
 
   @media (min-width: 800px) {
-    #steps-container { max-width: 400px; margin-top: 15px; }
+    #steps-container { 
+      max-width: 400px; 
+      margin-top: 15px; 
+    }
     .step-counter { font-size: 10px; margin-bottom: 8px; }
     .step-name { font-size: 32px; margin-bottom: 25px; } 
     .range-guides { font-size: 11px; } 
+    
     .step-nav { gap: 80px; } 
     .nav-arrow { width: 54px; height: 54px; font-size: 18px; }
     #step-panel { padding-top: 25px; height: 300px; } 
-    .finish-area { position: absolute; bottom: 35px; right: 40px; left: auto; transform: none; }
+    
+    .finish-area { 
+      position: absolute; 
+      bottom: 35px; 
+      right: 40px; 
+      left: auto; 
+      transform: none; 
+    }
     .btn-regen-mobile { padding: 14px 44px; font-size: 10px; }
     .header-logo { top: 25px; left: 30px; }
     .download-area { top: 25px; right: 40px; }
@@ -190,7 +221,10 @@
 <body>
 
 <div id="intro-page" class="page active">
-  <div class="intro-logo typo-logo"><span>HORN</span><span>GENERATOR</span></div>
+  <div class="intro-logo typo-logo">
+    <span>HORN</span>
+    <span>GENERATOR</span>
+  </div>
   <div class="intro-subtitle">Produced By Shachihata Inc.</div>
   <button class="btn-ui-main" onclick="startApp()">START GENERATING</button>
 </div>
@@ -200,7 +234,11 @@
     <div class="header-logo typo-logo">HORN GENERATOR</div>
     <div class="download-area">
       <button class="btn-dl-minimal" onclick="downloadModel()" title="Download .obj">
-        <svg viewBox="0 0 24 24"><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"></path><polyline points="7 11 12 16 17 11"></polyline><line x1="12" y1="16" x2="12" y2="4"></line></svg>
+        <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"></path>
+          <polyline points="7 11 12 16 17 11"></polyline>
+          <line x1="12" y1="16" x2="12" y2="4"></line>
+        </svg>
       </button>
     </div>
     <div id="three-canvas" style="width:100%; height:100%;"></div>
@@ -210,19 +248,41 @@
     <div class="step-nav">
       <button class="nav-arrow disabled" id="prev-btn" onclick="changeStep(-1)">←</button>
       <div id="steps-container">
-        <div class="step-content active"><p class="step-counter">STEP 01 / 05</p><p class="step-name">SIZE</p>
-          <div class="slider-wrapper"><input id="i-size" type="range" min="1" max="5" value="3"><div class="range-guides"><span>Short</span><span>Long</span></div></div>
+        <div class="step-content active">
+          <p class="step-counter">STEP 01 / 05</p>
+          <p class="step-name">SIZE</p>
+          <div class="slider-wrapper">
+            <input id="i-size" type="range" min="1" max="5" value="3">
+            <div class="range-guides"><span>Short</span><span>Long</span></div>
+          </div>
         </div>
-        <div class="step-content"><p class="step-counter">STEP 02 / 05</p><p class="step-name">CURVE</p>
-          <div class="slider-wrapper"><input id="i-bend" type="range" min="1" max="5" value="3"><div class="range-guides"><span>Straight</span><span>Curved</span></div></div>
+        <div class="step-content">
+          <p class="step-counter">STEP 02 / 05</p>
+          <p class="step-name">CURVE</p>
+          <div class="slider-wrapper">
+            <input id="i-bend" type="range" min="1" max="5" value="3">
+            <div class="range-guides"><span>Straight</span><span>Curved</span></div>
+          </div>
         </div>
-        <div class="step-content"><p class="step-counter">STEP 03 / 05</p><p class="step-name">BUMP</p>
-          <div class="slider-wrapper"><input id="i-bump" type="range" min="1" max="5" value="3"><div class="range-guides"><span>Smooth</span><span>Rough</span></div></div>
+        <div class="step-content">
+          <p class="step-counter">STEP 03 / 05</p>
+          <p class="step-name">BUMP</p>
+          <div class="slider-wrapper">
+            <input id="i-bump" type="range" min="1" max="5" value="3">
+            <div class="range-guides"><span>Smooth</span><span>Rough</span></div>
+          </div>
         </div>
-        <div class="step-content"><p class="step-counter">STEP 04 / 05</p><p class="step-name">BRANCHES</p>
-          <div class="slider-wrapper"><input id="i-branch" type="range" min="0" max="3" value="1"><div class="range-guides"><span>0</span><span>3</span></div></div>
+        <div class="step-content">
+          <p class="step-counter">STEP 04 / 05</p>
+          <p class="step-name">BRANCHES</p>
+          <div class="slider-wrapper">
+            <input id="i-branch" type="range" min="0" max="2" value="1">
+            <div class="range-guides"><span>0</span><span>2</span></div>
+          </div>
         </div>
-        <div class="step-content"><p class="step-counter">STEP 05 / 05</p><p class="step-name">COLOR</p>
+        <div class="step-content">
+          <p class="step-counter">STEP 05 / 05</p>
+          <p class="step-name">COLOR</p>
           <div class="slider-wrapper">
             <div class="color-grid" id="palette">
               <div class="color-dot active" style="background:#ffffff;" data-color="#ffffff"></div>
@@ -237,11 +297,20 @@
       </div>
       <button class="nav-arrow" id="next-btn" onclick="changeStep(1)">→</button>
     </div>
-    <div class="finish-area"><button class="btn-ui-main btn-regen-mobile" onclick="newDNA()">REGENERATE</button></div>
+    <div class="finish-area">
+      <button class="btn-ui-main btn-regen-mobile" onclick="newDNA()">REGENERATE</button>
+    </div>
   </div>
 </div>
 
-<script type="importmap">{ "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js", "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/" } }</script>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
 
 <script type="module">
 import * as THREE from "three";
@@ -250,20 +319,27 @@ import { OBJExporter } from "three/addons/exporters/OBJExporter.js";
 
 let settings = { size: 3, bend: 3, bump: 3, branch: 1, color: "#ffffff" };
 let dna;
+// DNA初期化関数
 function initDNA() {
-  dna = {
-    seedX: Math.random() * 10, seedZ: Math.random() * 10,
-    noiseBase: Array.from({ length: 300 }, () => Math.random()),
-    branchDNA: Array.from({ length: 3 }, () => ({
-      t: 0.3 + Math.random() * 0.45,
-      angle: (Math.random() - 0.5) * Math.PI * 0.1,
-      lenMult: 0.4 + Math.random() * 0.4,
-      curveMult: 0.8 + Math.random() * 0.7
-    }))
-  };
-  dna.branchDNA.sort((a, b) => a.t - b.t);
+    dna = {
+        seedX: Math.random() * 10,
+        seedZ: Math.random() * 10,
+        noiseBase: Array.from({ length: 300 }, () => Math.random()),
+        // PC版のサイズ拡大に合わせて、リアルな内側分岐のためにbranchDNAを調整
+        branchDNA: Array.from({ length: 3 }, () => ({
+            t: 0.3 + Math.random() * 0.2, // 成長点。弦の内側を狙うため主幹の根本付近(0.3〜0.5)に限定。干渉を防ぐ。
+            // 弦の内側（弦の短い方）を狙うため、曲率ベクトルに対する角度を±15度に限定
+            angle: (Math.random() * 2 - 1) * Math.PI * 0.08, 
+            lenMult: 0.35 + Math.random() * 0.25, // 主幹に対する長さの比率。太すぎ、長すぎを解消。
+            curveMult: 0.6 + Math.random() * 0.9 // うねり方の個性。主幹と重なりすぎないよう少し緩く。
+        }))
+    };
+    // リアルな生え方のために、t（生える位置）でソートしておく
+    dna.branchDNA.sort((a, b) => a.t - b.t);
 }
 initDNA();
+
+let currentStep = 0;
 
 window.startApp = () => {
   document.getElementById('intro-page').classList.remove('active');
@@ -280,18 +356,22 @@ window.changeStep = (dir) => {
   document.getElementById('next-btn').classList.toggle('disabled', currentStep === steps.length - 1);
 };
 
-window.newDNA = () => { initDNA(); updateModel(); };
+window.newDNA = () => {
+  initDNA(); // DNAを再初期化
+  updateModel();
+};
+
 window.downloadModel = () => {
   const exporter = new OBJExporter();
   const res = exporter.parse(hornGroup);
   const blob = new Blob([res], { type: 'text/plain' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = 'tsuno.obj';
+  a.download = 'tsuno_model.obj';
   a.click();
 };
 
-let scene, camera, renderer, controls, hornGroup, currentStep = 0;
+let scene, camera, renderer, controls, hornGroup;
 
 function initThree() {
   const c = document.getElementById("viewer-container");
@@ -313,73 +393,125 @@ function initThree() {
   updateModel();
 }
 
-function createPath(len, bStr, sX, sZ, cMult, startP = new THREE.Vector3(0,0,0), startQ = new THREE.Quaternion()) {
+// 解剖学的形状生成関数（うねり、有機的太さ、底面閉鎖、リアル先細り、Y字分岐構造、内側生えロジック実装）
+function createGrowingHorn(isBranch = false, startPos = new THREE.Vector3(), startDir = new THREE.Vector3(0,1,0), scale = 1.0, branchRadius = 0, bDNA = null) {
   const points = [];
-  for (let i = 0; i <= 15; i++) {
-    const t = i / 15;
-    const growth = t * len;
-    let v = new THREE.Vector3(
-      Math.sin(growth * 0.4 * cMult + sX) * bStr * 0.15 * Math.pow(t, 1.2) * 5,
-      growth,
-      Math.cos(growth * 0.4 * cMult + sZ) * bStr * 0.15 * Math.pow(t, 1.2) * 5
-    );
-    v.applyQuaternion(startQ).add(startP);
-    points.push(v);
+  const segments = 120; // 滑らかな有機的形状のためにセグメントを増やす
+  const radialSegments = 32;
+  
+  // STEP01 Sizeを反映
+  const totalGrowthTime = settings.size * 2.0 * scale; 
+  
+  //STEP02 CurveとDNAによる成長方向の制御（根本からのうねり）。PC版サイズ拡大に合わせて調整。
+  const bendStrength = settings.bend * 0.6;
+  const seedX = isBranch ? bDNA.bendSeedX : dna.seedX;
+  const seedZ = isBranch ? bDNA.bendSeedZ : dna.seedZ;
+  const curveMult = isBranch ? bDNA.curveMult : 1.0;
+
+  // 成長パス（CatmullRomCurve3）を生成
+  for (let i = 0; i <= 20; i++) {
+    const t = i / 20;
+    const growthTime = t * totalGrowthTime;
+    
+    // 基本の成長方向（Y軸）
+    const p = new THREE.Vector3(0, growthTime, 0);
+    
+    // PC版のサイズ拡大に合わせて、うねりを抑制してリアルな有機的形状を模擬。曲がりすぎないようbendStrengthを調整。
+    // DNAに基づいた複雑な３次元的なノイズ（うねり）を付与。
+    let xOffset = Math.sin(growthTime * 0.4 * curveMult + seedX) * bendStrength * 0.15 * Math.pow(t, 1.2) * 5.0;
+    let zOffset = Math.cos(growthTime * 0.4 * curveMult + seedZ) * bendStrength * 0.15 * Math.pow(t, 1.2) * 5.0;
+    
+    // 分岐の場合、弦の内側生えロジックに合わせて回転させる
+    if (isBranch) {
+        // 主幹の成長方向（Y軸）と分岐の内側角度パラメータ（startDir）の間の回転を取得
+        const quaternion = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), startDir.clone().normalize());
+        p.applyQuaternion(quaternion);
+        // うねりも回転させる
+        const offset = new THREE.Vector3(xOffset, 0, zOffset);
+        offset.applyQuaternion(quaternion);
+        p.add(offset); 
+    } else {
+        p.x += xOffset;
+        p.z += zOffset;
+    }
+
+    points.push(p.add(startPos));
   }
-  return new THREE.CatmullRomCurve3(points);
-}
+  const curve = new THREE.CatmullRomCurve3(points);
+  
+  // 主幹の底面太さパラメータ
+  const pedicleRadius = (0.6) * (settings.size * 0.08 + 0.9);
+  
+  const vertices = [], indices = [], frames = curve.computeFrenetFrames(segments, false);
 
-function buildMesh(curve, baseR, isBranch, bT = 0) {
-  const segs = isBranch ? 60 : 100, radSegs = 32;
-  const vertices = [], indices = [], frames = curve.computeFrenetFrames(segs, false);
-  const pRadius = baseR * (settings.size * 0.08 + 0.9);
-
-  for (let i = 0; i <= segs; i++) {
-    const t = i / segs;
+  // メッシュの頂点を生成。Frenetフレームの内側Normalsベクトルを後で使うためにframesを計算。
+  for (let i = 0; i <= segments; i++) {
+    const t = i / segments;
+    
+    //STEP03 Bump（表面の質感）
+    // DNAのNoiseBaseを使用して、成長に伴う不規則な表面を表現。PC版に合わせて調整
     const noiseIdx = Math.floor(t * (dna.noiseBase.length - 1));
-    const bump = 1 + (dna.noiseBase[noiseIdx] - 0.5) * (settings.bump * 0.025) * (1.1 - t);
+    const bumpDNA = dna.noiseBase[noiseIdx];
+    const bumpStrength = settings.bump * 0.02; // 重なりや干渉を防ぐため少し抑える
+    const bump = 1 + (bumpDNA - 0.5) * bumpStrength * (1.1 - t); 
+
+    // 有機的な太さの変化（滑らかにリアルな先細り）。動物の角のような有機的カーブを採用
     let r;
     if (isBranch) {
-      r = pRadius * Math.pow(1 - t, 0.9) * bump;
+        // 解剖学的Y字構造：主幹の太さ（branchRadius）で滑らかに始まり、先細る。
+        r = branchRadius * Math.pow(1.0 - t, 0.9) * bump;
     } else {
-      let swell = (bT > 0 && Math.abs(t - bT) < 0.12) ? 1.0 + 0.4 * Math.exp(-Math.pow((t - bT) / 0.06, 2)) : 1.0;
-      r = pRadius * Math.pow(1 - t, 0.8) * bump * swell;
+        r = pedicleRadius * Math.pow(1.0 - t, 0.9) * bump;
     }
-    r = Math.max(r, 0.01);
-    const p = curve.getPointAt(t), n = frames.normals[i], b = frames.binormals[i];
-    for (let j = 0; j <= radSegs; j++) {
-      const a = (j / radSegs) * Math.PI * 2;
-      const v = new THREE.Vector3().copy(p).add(n.clone().multiplyScalar(Math.cos(a) * r)).add(b.clone().multiplyScalar(Math.sin(a) * r));
+    
+    if (r < 0.001) break; 
+
+    const p = curve.getPointAt(t);
+    const n = frames.normals[i], b = frames.binormals[i];
+    for (let j = 0; j <= radialSegments; j++) {
+      const theta = (j / radialSegments) * Math.PI * 2;
+      const v = new THREE.Vector3().copy(p).add(n.clone().multiplyScalar(Math.cos(theta) * r)).add(b.clone().multiplyScalar(Math.sin(theta) * r));
       vertices.push(v.x, v.y, v.z);
     }
   }
 
-  for (let i = 0; i < segs; i++) {
-    for (let j = 0; j < radSegs; j++) {
-      const a = i * (radSegs + 1) + j, b = (i + 1) * (radSegs + 1) + j;
-      const c = (i + 1) * (radSegs + 1) + (j + 1), d = i * (radSegs + 1) + (j + 1);
+  // 側面ポリゴン
+  const numRings = vertices.length / 3 / (radialSegments + 1) - 1;
+  for (let i = 0; i < numRings; i++) {
+    for (let j = 0; j < radialSegments; j++) {
+      const a = i * (radialSegments + 1) + j;
+      const b = (i + 1) * (radialSegments + 1) + j;
+      const c = (i + 1) * (radialSegments + 1) + (j + 1);
+      const d = i * (radialSegments + 1) + (j + 1);
       indices.push(a, b, d, b, c, d);
     }
   }
 
-  const tipIdx = vertices.length / 3;
-  const tipP = curve.getPointAt(1);
-  vertices.push(tipP.x, tipP.y, tipP.z);
-  const lastRing = (segs) * (radSegs + 1);
-  for (let j = 0; j < radSegs; j++) indices.push(tipIdx, lastRing + j + 1, lastRing + j);
-
+  // 底面閉鎖（branchは主幹と接合するので塞がない。Pedicleから主幹内部へ食い込ませる）
   if (!isBranch) {
-    const baseIdx = vertices.length / 3;
-    const baseP = curve.getPointAt(0);
-    vertices.push(baseP.x, baseP.y, baseP.z);
-    for (let j = 0; j < radSegs; j++) indices.push(baseIdx, j, j + 1);
+    const bottomCenterIdx = vertices.length / 3;
+    const bottomPos = curve.getPointAt(0);
+    vertices.push(bottomPos.x, bottomPos.y, bottomPos.z);
+    for (let j = 0; j < radialSegments; j++) {
+        indices.push(bottomCenterIdx, j, j + 1);
+    }
+  }
+
+  // 先端閉鎖
+  const topCenterIdx = vertices.length / 3;
+  const topPos = curve.getPointAt(vertices.length/3 > segments * (radialSegments+1) ? 1.0 : (vertices.length/3 / (radialSegments+1) / segments)); // 途中で終了した場合に対応
+  vertices.push(topPos.x, topPos.y, topPos.z);
+  const lastRingStart = (Math.floor(vertices.length / 3 / (radialSegments + 1)) - 2) * (radialSegments + 1);
+  for (let j = 0; j < radialSegments; j++) {
+    indices.push(topCenterIdx, lastRingStart + j + 1, lastRingStart + j);
   }
 
   const geo = new THREE.BufferGeometry();
   geo.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
   geo.setIndex(indices);
   geo.computeVertexNormals();
-  return new THREE.Mesh(geo, new THREE.MeshPhysicalMaterial({ color: settings.color, roughness: 0.75, metalness: 0.02, side: 2 }));
+  // リアルな質感
+  return { mesh: new THREE.Mesh(geo, new THREE.MeshPhysicalMaterial({ color: settings.color, roughness: 0.72, metalness: 0.01, side: 2 })), curve: curve, frames: frames };
 }
 
 function updateModel() {
@@ -387,51 +519,96 @@ function updateModel() {
   while(hornGroup.children.length > 0) {
     const c = hornGroup.children[0]; c.geometry.dispose(); c.material.dispose(); hornGroup.remove(c);
   }
-  const mLen = settings.size * 2.2, bStr = settings.bend * 0.6;
-  const mainCurve = createPath(mLen, bStr, dna.seedX, dna.seedZ, 1.0);
-  const nBranches = Math.min(settings.branch, dna.branchDNA.length);
-  let firstBT = nBranches > 0 ? dna.branchDNA[0].t : 0;
+  
+  // 主幹（Main Beam）。分岐によるswell（膨らみ）を考慮するロジックは今回内側ロジックに集中するためオミットし、一体化を優先。
+  const main = createGrowingHorn();
+  hornGroup.add(main.mesh);
+  
+  // リアルな分岐（Branches）の内側ロジック生成
+  // STEP04の値（settings.branch）に応じて分岐を追加（0〜2）
+  if (settings.branch > 0) {
+    const numBranches = Math.min(settings.branch, dna.branchDNA.length);
+    for (let i = 0; i < numBranches; i++) {
+        // DNAから分岐のパラメータを取得
+        const bDNA = dna.branchDNA[i];
+        const t = bDNA.t; // 主幹上の生える位置（内側ロジックで根本付近に限定）
 
-  hornGroup.add(buildMesh(mainCurve, 0.6, false, firstBT));
+        // 主幹上の成長点（ CatmullRomCurve3上の点）を取得。主幹内部の成長点から直接生やすことで一体化。
+        const branchStartPos = main.curve.getPointAt(t);
+        // その点における主幹の成長方向（接線）
+        const branchMainTangent = main.curve.getTangentAt(t);
 
-  for (let i = 0; i < nBranches; i++) {
-    const bd = dna.branchDNA[i];
-    const bPos = mainCurve.getPointAt(bd.t), bTan = mainCurve.getTangentAt(bd.t);
-    const helper = new THREE.Vector3(0, 1, 0);
-    if (Math.abs(bTan.y) > 0.9) helper.set(1, 0, 0);
-    const bNormal = new THREE.Vector3().crossVectors(helper, bTan).normalize();
-    const angle = (25 + Math.random() * 15) * (Math.PI / 180);
-    const bDir = new THREE.Vector3().copy(bNormal).lerp(bTan, Math.tan(angle)).normalize();
-    bDir.applyAxisAngle(bTan, bd.angle);
-    const bQ = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), bDir);
-    const bCurve = createPath(mLen * bd.lenMult, bStr * 0.8, Math.random()*10, Math.random()*10, bd.curveMult, bPos, bQ);
-    hornGroup.add(buildMesh(bCurve, 0.6, true));
+        // 分岐点のスロットイン・swell Swell膨らみ。一体感を出すため主幹の太さを計算。
+        const noiseIdxMain = Math.floor(t * (dna.noiseBase.length - 1));
+        const bumpMain = 1 + (dna.noiseBase[noiseIdxMain] - 0.5) * (settings.bump * 0.02);
+        // 有機的なswell：分岐点付近で主幹を盛り上がらせてY字構造を模擬。内側ロジックに swellを組み込む。
+        // 単純 swellから内側 swellへ。曲率ベクトルを利用。 swellMainRをそのまま分岐太さに。
+        let swellMainR = (0.6) * (settings.size * 0.08 + 0.9) * Math.pow(1.0 - t, 0.9) * bumpMain * (1.2 + 0.5 * Math.exp(-Math.pow((t - 0.45) / 0.1, 2))); // 内側ロジックに合わせた swelling
+        
+        // 「弦の内側（弦の短い方）から生やす」ロジック：曲率ベクトルを利用
+        // 主幹パスの3次元的な曲率から、角が反る方向を数学的に特定。Frenetフレームの Normalsが曲率方向（内側）を向く。
+        const segmentIdx = Math.floor(t * (main.frames.normals.length - 1));
+        const inwardNormal = main.frames.normals[segmentIdx].clone(); // 内側を向くベクトル。干渉を防ぐ。
+
+        // 解剖学的に上向きアングル「鋭角（20〜40°）」固定: 主幹TangentからInwardNormal方向へ少し傾ける
+        const anatomyAngle = (20 + Math.random() * 20) * (Math.PI / 180); // 20〜40度をラジアンに
+        // lerpを使って、Tangent軸からInwardNormal軸へanatomyAngle分だけ傾けたベクトルを作成
+        const branchAnatomyDir = branchMainTangent.clone().lerp(inwardNormal, Math.tan(anatomyAngle)).normalize();
+        
+        // InwardNormal軸周りのわずかな回転（DNAのangle）のみ許容し、弦の内側をキープ
+        branchAnatomyDir.applyAxisAngle(inwardNormal, bDNA.angle);
+        
+        // 分岐ごとのDNAとうねりを調整
+        bDNA.bendSeedX = Math.random()*10;
+        bDNA.bendSeedZ = Math.random()*10;
+
+        // 解剖学的Y字構造：太さを主幹と同じ swellMainRから滑らかに始める（棒刺し解消）。branchRadius = swellMainR。
+        // 分岐（isBranch）モデルの生成。長さ、太さは主幹より細く（lenMultで調整）。
+        const branch = createGrowingHorn(true, branchStartPos, branchAnatomyDir, bDNA.lenMult, swellMainR, bDNA); 
+        hornGroup.add(branch.mesh);
+    }
   }
 
+  // 中心合わせ
   const box = new THREE.Box3().setFromObject(hornGroup);
   const center = new THREE.Vector3(); box.getCenter(center);
   hornGroup.children.forEach(m => m.position.sub(center));
+  controls.target.set(0, 0, 0);
 }
 
-function animate() { requestAnimationFrame(animate); if(controls) controls.update(); if(renderer) renderer.render(scene, camera); }
+function animate() {
+  requestAnimationFrame(animate);
+  if (controls) controls.update();
+  if (renderer) renderer.render(scene, camera);
+}
+
 ['size', 'bend', 'bump', 'branch'].forEach(id => {
   const el = document.getElementById('i-' + id);
   if (el) el.oninput = (e) => { settings[id] = parseInt(e.target.value); updateModel(); };
 });
+
 document.getElementById('palette').onclick = (e) => {
   if (e.target.classList.contains('color-dot')) {
-    document.querySelector('.color-dot.active')?.classList.remove('active');
+    const activeDot = document.querySelector('.color-dot.active');
+    if (activeDot) activeDot.classList.remove('active');
     e.target.classList.add('active');
-    settings.color = e.target.dataset.color; updateModel();
+    settings.color = e.target.dataset.color;
+    updateModel();
   }
 };
+
 document.getElementById('custom-color').oninput = (e) => {
-  document.querySelector('.color-dot.active')?.classList.remove('active');
-  settings.color = e.target.value; updateModel();
+  const activeDot = document.querySelector('.color-dot.active');
+  if (activeDot) activeDot.classList.remove('active');
+  settings.color = e.target.value;
+  updateModel();
 };
+
 window.onresize = () => {
   const c = document.getElementById("viewer-container");
-  camera.aspect = c.clientWidth/c.clientHeight; camera.updateProjectionMatrix();
+  if (!c || !camera || !renderer) return;
+  camera.aspect = c.clientWidth/c.clientHeight;
+  camera.updateProjectionMatrix();
   renderer.setSize(c.clientWidth, c.clientHeight);
 };
 </script>
