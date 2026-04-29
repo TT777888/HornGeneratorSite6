@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>TSUNO | HORN GENERATOR</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@800&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; touch-action: manipulation; }
+  :root {
+    --bg-white: #ffffff;
+    --panel-bg: #f7f7f7;
+    --text-black: #000000;
+    --border: #e5e5e5;
+    --font-ui: 'Helvetica Neue', Arial, sans-serif;
+    --font-logo: 'Syne', sans-serif;
+  }
+  body { 
+    background: var(--bg-white); 
+    color: var(--text-black); 
+    overflow: hidden; 
+    height: 100vh;
+    width: 100vw;
+    font-family: var(--font-ui);
+  }
+
+  .page {
+    position: absolute; inset: 0;
+    display: none; flex-direction: column;
+    opacity: 0; transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .page.active { display: flex; opacity: 1; z-index: 10; }
+
+  /* ── TYPOGRAPHY ── */
+  .typo-logo {
+    font-family: var(--font-logo);
+    font-weight: 800; text-transform: uppercase;
+    line-height: 1.1;
+  }
+
+  /* ── START SCREEN ── */
+  #intro-page {
+    background: var(--bg-white);
+    justify-content: center; align-items: center;
+    text-align: center;
+    padding: 0 10px;
+  }
+  
+  .intro-logo { 
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: clamp(20px, 8vw, 32px); 
+    margin-bottom: 15px; 
+    text-align: center;
+    width: 100%;
+    letter-spacing: 0.05em;
+  }
+  
+  @media (min-width: 800px) {
+    .intro-logo { 
+      flex-direction: row; 
+      gap: 0.3em;
+      font-size: 32px; 
+      letter-spacing: 0.1em;
+      white-space: nowrap;
+    }
+  }
+
+  .intro-subtitle {
+    font-size: clamp(10px, 3vw, 13px); color: #888; letter-spacing: 0.25em;
+    margin-bottom: 45px;
+  }
+  
+  .btn-ui-main {
+    padding: 18px 50px;
+    background: var(--text-black); border: none;
+    color: #fff; cursor: pointer; 
+    font-family: var(--font-ui);
+    font-size: 11px; letter-spacing: 0.2em;
+    font-weight: 700;
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease;
+    border-radius: 0; 
+    text-transform: uppercase;
+    display: inline-block;
+  }
+  @media (hover: hover) { .btn-ui-main:hover { transform: scale(1.06); opacity: 0.9; } }
+
+  /* ── MAIN CUSTOMIZER ── */
+  #main-page { display: flex; flex-direction: column; }
+  #viewer-container { flex: 1; background: #fff; position: relative; }
+
+  .header-logo {
+    position: absolute; top: 20px; left: 20px; z-index: 200;
+    font-size: clamp(10px, 2.5vw, 14px);
+    white-space: nowrap;
+    font-family: var(--font-logo); font-weight: 800; text-transform: uppercase;
+  }
+
+  .download-area {
+    position: absolute; top: 15px; right: 15px; z-index: 200;
+  }
+  .btn-dl-minimal {
+    width: 46px; height: 46px; background: #fff; 
+    border: 1px solid #ddd; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: 0.3s;
+  }
+  .btn-dl-minimal svg { width: 20px; height: 20px; fill: none; stroke: var(--text-black); stroke-width: 1.3; }
+
+  /* STEP PANEL */
+  #step-panel {
+    height: 260px; background: var(--panel-bg);
+    border-top: 1px solid var(--border);
+    display: flex; flex-direction: column; align-items: center;
+    padding: 20px 10px;
+    z-index: 100;
+    position: relative;
+  }
+
+  .step-nav {
+    display: flex; align-items: center; justify-content: center;
+    gap: clamp(10px, 4vw, 20px);
+    width: 100%; max-width: 900px; /* PCでの広がりを許容 */
+  }
+  .nav-arrow {
+    width: 44px; height: 44px; border-radius: 50%; border: 1px solid #ddd;
+    background: #fff; cursor: pointer; display: flex; align-items: center;
+    justify-content: center; transition: 0.2s; font-size: 16px;
+    color: var(--text-black); flex-shrink: 0;
+  }
+  .nav-arrow.disabled { opacity: 0.1; cursor: default; }
+
+  #steps-container { 
+    width: 100%; 
+    max-width: 340px; 
+    min-height: 150px; 
+    display: flex; align-items: flex-start; justify-content: center; 
+  }
+  .step-content { text-align: center; display: none; width: 100%; }
+  .step-content.active { display: block; animation: slideUp 0.4s ease forwards; }
+
+  .step-counter { font-size: 8px; color: #aaa; letter-spacing: 0.3em; margin-bottom: 6px; font-weight: 700; }
+  .step-name { font-family: var(--font-logo); font-size: clamp(20px, 6vw, 24px); font-weight: 800; margin-bottom: 20px; letter-spacing: -0.01em; }
+
+  .slider-wrapper { 
+    position: relative; 
+    padding: 0 5px; 
+    width: 100%; 
+    height: 60px; 
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  
+  input[type=range] { -webkit-appearance: none; width: 100%; height: 2px; background: #ddd; outline: none; margin: 10px 0; }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 22px; height: 22px; background: #000; border-radius: 50%; cursor: pointer; border: 2px solid #fff; }
+
+  .range-guides {
+    display: flex; justify-content: space-between;
+    margin-top: 0px; font-size: 9px; color: #ccc;
+    font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em;
+    height: 12px;
+    line-height: 1;
+  }
+
+  .color-grid { 
+    display: flex; gap: clamp(8px, 3vw, 15px); 
+    justify-content: center; align-items: center; 
+    height: 34px;
+    margin: 4px 0; 
+  }
+  .color-dot { width: 32px; height: 32px; border-radius: 50%; cursor: pointer; border: 1px solid rgba(0,0,0,0.1); position: relative; }
+  .color-dot.active { box-shadow: 0 0 0 3px #fff, 0 0 0 5px #000; }
+  .color-picker-wrapper { width: 32px; height: 32px; border-radius: 50%; border: 1px solid #ddd; cursor: pointer; background: conic-gradient(red, yellow, lime, aqua, blue, fuchsia, red); position: relative; overflow: hidden; }
+  #custom-color { position: absolute; opacity: 0; inset: 0; width: 100%; height: 100%; cursor: pointer; }
+
+  .finish-area { 
+    position: fixed;
+    bottom: 30px; 
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    width: auto;
+  }
+  .btn-regen-mobile {
+    padding: 10px 22px;
+    font-size: 9px;
+    white-space: nowrap;
+  }
+
+  @media (min-width: 800px) {
+    /* PC版: パラメータ部分を全体的に大きく調整 */
+    #steps-container { 
+      max-width: 400px; /* スライダーの幅を拡大 */
+      margin-top: 15px; /* 位置をさらに若干下げてバランス調整 */
+    }
+    .step-counter { font-size: 10px; margin-bottom: 8px; }
+    .step-name { font-size: 32px; margin-bottom: 25px; } /* ステップ名を拡大 */
+    .range-guides { font-size: 11px; } /* ガイドテキストを拡大 */
+    
+    .step-nav { gap: 80px; } /* 矢印の間隔を少し広げる */
+    .nav-arrow { width: 54px; height: 54px; font-size: 18px; }
+    #step-panel { padding-top: 25px; height: 300px; } /* パネル全体の高さも微増 */
+    
+    .finish-area { 
+      position: absolute; 
+      bottom: 35px; 
+      right: 40px; 
+      left: auto; 
+      transform: none; 
+    }
+    .btn-regen-mobile { padding: 14px 44px; font-size: 10px; }
+    .header-logo { top: 25px; left: 30px; }
+    .download-area { top: 25px; right: 40px; }
+  }
+</style>
+</head>
+<body>
+
+<div id="intro-page" class="page active">
+  <div class="intro-logo typo-logo">
+    <span>HORN</span>
+    <span>GENERATOR</span>
+  </div>
+  <div class="intro-subtitle">Produced By Shachihata Inc.</div>
+  <button class="btn-ui-main" onclick="startApp()">START GENERATING</button>
+</div>
+
+<div id="main-page" class="page">
+  <div id="viewer-container">
+    <div class="header-logo typo-logo">HORN GENERATOR</div>
+    <div class="download-area">
+      <button class="btn-dl-minimal" onclick="downloadModel()" title="Download .obj">
+        <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"></path>
+          <polyline points="7 11 12 16 17 11"></polyline>
+          <line x1="12" y1="16" x2="12" y2="4"></line>
+        </svg>
+      </button>
+    </div>
+    <div id="three-canvas" style="width:100%; height:100%;"></div>
+  </div>
+
+  <div id="step-panel">
+    <div class="step-nav">
+      <button class="nav-arrow disabled" id="prev-btn" onclick="changeStep(-1)">←</button>
+      <div id="steps-container">
+        <div class="step-content active">
+          <p class="step-counter">STEP 01 / 05</p>
+          <p class="step-name">SIZE</p>
+          <div class="slider-wrapper">
+            <input id="i-size" type="range" min="1" max="5" value="3">
+            <div class="range-guides"><span>Short</span><span>Long</span></div>
+          </div>
+        </div>
+        <div class="step-content">
+          <p class="step-counter">STEP 02 / 05</p>
+          <p class="step-name">CURVE</p>
+          <div class="slider-wrapper">
+            <input id="i-bend" type="range" min="1" max="5" value="3">
+            <div class="range-guides"><span>Straight</span><span>Curved</span></div>
+          </div>
+        </div>
+        <div class="step-content">
+          <p class="step-counter">STEP 03 / 05</p>
+          <p class="step-name">BUMP</p>
+          <div class="slider-wrapper">
+            <input id="i-bump" type="range" min="1" max="5" value="3">
+            <div class="range-guides"><span>Smooth</span><span>Rough</span></div>
+          </div>
+        </div>
+        <div class="step-content">
+          <p class="step-counter">STEP 04 / 05</p>
+          <p class="step-name">BRANCHES</p>
+          <div class="slider-wrapper">
+            <input id="i-branch" type="range" min="1" max="5" value="1">
+            <div class="range-guides"><span>0</span><span>5</span></div>
+          </div>
+        </div>
+        <div class="step-content">
+          <p class="step-counter">STEP 05 / 05</p>
+          <p class="step-name">COLOR</p>
+          <div class="slider-wrapper">
+            <div class="color-grid" id="palette">
+              <div class="color-dot active" style="background:#ffffff;" data-color="#ffffff"></div>
+              <div class="color-dot" style="background:#f2f2f2;" data-color="#f2f2f2"></div>
+              <div class="color-dot" style="background:#d4a373;" data-color="#d4a373"></div>
+              <div class="color-dot" style="background:#4e4449;" data-color="#4e4449"></div>
+              <div class="color-picker-wrapper"><input type="color" id="custom-color" value="#ffffff"></div>
+            </div>
+            <div class="range-guides" style="visibility: hidden;"><span>-</span><span>-</span></div>
+          </div>
+        </div>
+      </div>
+      <button class="nav-arrow" id="next-btn" onclick="changeStep(1)">→</button>
+    </div>
+    <div class="finish-area">
+      <button class="btn-ui-main btn-regen-mobile" onclick="newDNA()">REGENERATE</button>
+    </div>
+  </div>
+</div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from "three";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { OBJExporter } from "three/addons/exporters/OBJExporter.js";
+
+let settings = { size: 3, bend: 3, bump: 3, branch: 1, color: "#ffffff" };
+let dna = { seedX: Math.random()*5, seedZ: Math.random()*5, noise: Array.from({length: 120}, () => Math.random()) };
+let currentStep = 0;
+
+window.startApp = () => {
+  document.getElementById('intro-page').classList.remove('active');
+  document.getElementById('main-page').classList.add('active');
+  initThree();
+};
+
+window.changeStep = (dir) => {
+  const steps = document.querySelectorAll('.step-content');
+  steps[currentStep].classList.remove('active');
+  currentStep = Math.max(0, Math.min(steps.length - 1, currentStep + dir));
+  steps[currentStep].classList.add('active');
+  document.getElementById('prev-btn').classList.toggle('disabled', currentStep === 0);
+  document.getElementById('next-btn').classList.toggle('disabled', currentStep === steps.length - 1);
+};
+
+window.newDNA = () => {
+  dna.seedX = Math.random() * 5; dna.seedZ = Math.random() * 5;
+  dna.noise = Array.from({length: 120}, () => Math.random());
+  updateModel();
+};
+
+window.downloadModel = () => {
+  const exporter = new OBJExporter();
+  const res = exporter.parse(hornGroup);
+  const blob = new Blob([res], { type: 'text/plain' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'tsuno_model.obj';
+  a.click();
+};
+
+let scene, camera, renderer, controls, hornGroup;
+
+function initThree() {
+  const c = document.getElementById("viewer-container");
+  scene = new THREE.Scene();
+  scene.background = new THREE.Color(0xffffff);
+  camera = new THREE.PerspectiveCamera(40, c.clientWidth/c.clientHeight, 0.1, 1000);
+  camera.position.set(0, 5, 15);
+  renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setSize(c.clientWidth, c.clientHeight);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  document.getElementById("three-canvas").appendChild(renderer.domElement);
+  controls = new OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true;
+  scene.add(new THREE.AmbientLight(0xffffff, 0.9));
+  const l = new THREE.DirectionalLight(0xffffff, 1.0); l.position.set(10,20,10); scene.add(l);
+  hornGroup = new THREE.Group();
+  scene.add(hornGroup);
+  animate();
+  updateModel();
+}
+
+function createSolidHorn(isBranch = false, startPos = new THREE.Vector3(), scale = 1.0, bId = 0) {
+  const points = [];
+  const segments = 60; 
+  const radialSegments = 24;
+  const len = settings.size * 1.5 * scale;
+  const bS = settings.bend * 0.4;
+  for (let i = 0; i <= 10; i++) {
+    const t = i/10;
+    let x = !isBranch ? Math.sin(t*Math.PI*0.4 + dna.seedX)*bS*t*2.5 : Math.cos((bId/settings.branch)*Math.PI*2 + dna.seedX)*(t*2.2);
+    let z = !isBranch ? Math.cos(t*Math.PI*0.4 + dna.seedZ)*bS*t*2.5 : Math.sin((bId/settings.branch)*Math.PI*2 + dna.seedX)*(t*2.2);
+    points.push(new THREE.Vector3(x, t*len, z).add(startPos));
+  }
+  const curve = new THREE.CatmullRomCurve3(points);
+  const baseR = (isBranch ? 0.2 : 0.45) * (settings.size*0.08 + 0.9);
+  const vertices = [], indices = [], frames = curve.computeFrenetFrames(segments, false);
+
+  for (let i = 0; i <= segments; i++) {
+    const t = i/segments;
+    const bump = 1 + (Math.sin(t*30)*0.5 + (dna.noise[i%120]-0.5))*(settings.bump*0.04)*(1-t);
+    const r = baseR * Math.pow(1-t,0.9)*bump;
+    const p = curve.getPointAt(t);
+    const n = frames.normals[i], b = frames.binormals[i];
+    for (let j = 0; j <= radialSegments; j++) {
+      const theta = (j/radialSegments)*Math.PI*2;
+      const v = new THREE.Vector3().copy(p).add(n.clone().multiplyScalar(Math.cos(theta) * r)).add(b.clone().multiplyScalar(Math.sin(theta) * r));
+      vertices.push(v.x, v.y, v.z);
+    }
+  }
+  for (let i = 0; i < segments; i++) {
+    for (let j = 0; j < radialSegments; j++) {
+      const a = i*(radialSegments+1)+j, b = (i+1)*(radialSegments+1)+j;
+      const c = (i+1)*(radialSegments+1)+(j+1), d = i*(radialSegments+1)+(j+1);
+      indices.push(a, b, d, b, c, d);
+    }
+  }
+
+  const bottomCenterIdx = vertices.length / 3;
+  const bottomPos = curve.getPointAt(0);
+  vertices.push(bottomPos.x, bottomPos.y, bottomPos.z);
+  for (let j = 0; j < radialSegments; j++) {
+    indices.push(bottomCenterIdx, j, j + 1);
+  }
+
+  const topCenterIdx = vertices.length / 3;
+  const topPos = curve.getPointAt(1);
+  vertices.push(topPos.x, topPos.y, topPos.z);
+  const lastRingStart = segments * (radialSegments + 1);
+  for (let j = 0; j < radialSegments; j++) {
+    indices.push(topCenterIdx, lastRingStart + j + 1, lastRingStart + j);
+  }
+
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+  geo.setIndex(indices);
+  geo.computeVertexNormals();
+  return { mesh: new THREE.Mesh(geo, new THREE.MeshPhysicalMaterial({ color: settings.color, roughness: 0.5, metalness: 0.05, side: 2 })), curve: curve };
+}
+
+function updateModel() {
+  if(!hornGroup) return;
+  while(hornGroup.children.length > 0) {
+    const c = hornGroup.children[0]; c.geometry.dispose(); c.material.dispose(); hornGroup.remove(c);
+  }
+  const main = createSolidHorn();
+  hornGroup.add(main.mesh);
+  for (let i = 0; i < settings.branch-1; i++) {
+    hornGroup.add(createSolidHorn(true, main.curve.getPointAt(0.2+i*0.2), 0.5, i).mesh);
+  }
+  const box = new THREE.Box3().setFromObject(hornGroup);
+  const center = new THREE.Vector3(); box.getCenter(center);
+  hornGroup.children.forEach(m => m.position.sub(center));
+  controls.target.set(0, 0, 0);
+}
+
+function animate() {
+  requestAnimationFrame(animate);
+  if (controls) controls.update();
+  if (renderer) renderer.render(scene, camera);
+}
+
+['size', 'bend', 'bump', 'branch'].forEach(id => {
+  const el = document.getElementById('i-' + id);
+  if (el) el.oninput = (e) => { settings[id] = parseInt(e.target.value); updateModel(); };
+});
+
+document.getElementById('palette').onclick = (e) => {
+  if (e.target.classList.contains('color-dot')) {
+    const activeDot = document.querySelector('.color-dot.active');
+    if (activeDot) activeDot.classList.remove('active');
+    e.target.classList.add('active');
+    settings.color = e.target.dataset.color;
+    updateModel();
+  }
+};
+
+document.getElementById('custom-color').oninput = (e) => {
+  const activeDot = document.querySelector('.color-dot.active');
+  if (activeDot) activeDot.classList.remove('active');
+  settings.color = e.target.value;
+  updateModel();
+};
+
+window.onresize = () => {
+  const c = document.getElementById("viewer-container");
+  if (!c || !camera || !renderer) return;
+  camera.aspect = c.clientWidth/c.clientHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(c.clientWidth, c.clientHeight);
+};
+</script>
+</body>
+</html>
