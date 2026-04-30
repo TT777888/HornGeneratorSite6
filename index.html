@@ -15,6 +15,7 @@
     --border: #e5e5e5;
     --font-ui: 'Helvetica Neue', Arial, sans-serif;
     --font-logo: 'Syne', sans-serif;
+    --bone-white: #f9f6f2;
   }
   body { background: var(--bg-white); color: var(--text-black); overflow: hidden; height: 100vh; width: 100vw; font-family: var(--font-ui); }
 
@@ -55,16 +56,28 @@
   input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 22px; height: 22px; background: #000; border-radius: 50%; cursor: pointer; border: 2px solid #fff; }
   .range-guides { display: flex; justify-content: space-between; margin-top: 0px; font-size: 9px; color: #ccc; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; height: 12px; line-height: 1; }
 
-  .color-grid { display: flex; gap: clamp(8px, 3vw, 15px); justify-content: center; align-items: center; height: 34px; margin: 4px 0; }
-  .color-dot { width: 34px; height: 34px; border-radius: 50%; cursor: pointer; border: 1px solid rgba(0,0,0,0.1); position: relative; overflow: hidden; background-size: cover; }
-  .color-dot.active { box-shadow: 0 0 0 3px #fff, 0 0 0 5px #000; }
+  /* ── UPDATED TEXTURE PREVIEW DOTS ── */
+  .color-grid { display: flex; gap: clamp(10px, 4vw, 20px); justify-content: center; align-items: center; height: 44px; margin: 4px 0; }
+  .color-dot { width: 40px; height: 40px; border-radius: 50%; cursor: pointer; border: 1px solid rgba(0,0,0,0.1); position: relative; overflow: hidden; background-size: cover; transition: transform 0.2s; }
+  .color-dot.active { box-shadow: 0 0 0 3px #fff, 0 0 0 5px #000; transform: scale(1.1); }
   
-  .p-bone { background: #f9f6f2; }
-  .p-cow { background: radial-gradient(circle at 30% 30%, #333 20%, transparent 25%), #f9f6f2; }
-  .p-deer { background: linear-gradient(to top, #8b5a2b, #f9f6f2); }
-  .p-dark { background: radial-gradient(circle, #444, #111); }
+  /* プレビューアイコンをリアルなイメージに修正 */
+  .p-bone { background: radial-gradient(circle at 30% 30%, #fff, var(--bone-white)); }
+  .p-cow { 
+    background-color: var(--bone-white);
+    background-image: 
+      radial-gradient(circle at 20% 30%, #333 15%, transparent 25%),
+      radial-gradient(circle at 70% 60%, #222 20%, transparent 35%),
+      radial-gradient(circle at 40% 80%, #444 10%, transparent 20%);
+  }
+  .p-deer { 
+    background: linear-gradient(135deg, #a67c52 0%, #8b5a2b 50%, var(--bone-white) 100%);
+  }
+  .p-dark { 
+    background: radial-gradient(circle at 30% 30%, #444, #111);
+  }
 
-  .color-picker-wrapper { width: 34px; height: 34px; border-radius: 50%; border: 1px solid #ddd; cursor: pointer; background: conic-gradient(red, yellow, lime, aqua, blue, fuchsia, red); position: relative; overflow: hidden; }
+  .color-picker-wrapper { width: 40px; height: 40px; border-radius: 50%; border: 1px solid #ddd; cursor: pointer; background: conic-gradient(red, yellow, lime, aqua, blue, fuchsia, red); position: relative; overflow: hidden; }
   #custom-color { position: absolute; opacity: 0; inset: 0; width: 100%; height: 100%; cursor: pointer; }
 
   .finish-area { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 1000; width: auto; }
@@ -113,10 +126,10 @@
         <div class="step-content"><p class="step-counter">STEP 05 / 05</p><p class="step-name">TEXTURE</p>
           <div class="slider-wrapper">
             <div class="color-grid" id="palette">
-              <div class="color-dot active p-bone" data-pattern="bone" title="Natural Bone"></div>
-              <div class="color-dot p-cow" data-pattern="cow" title="Cow Spotted"></div>
-              <div class="color-dot p-deer" data-pattern="deer" title="Deer Horn"></div>
-              <div class="color-dot p-dark" data-pattern="dark" title="Ancient Dark"></div>
+              <div class="color-dot active p-bone" data-pattern="bone"></div>
+              <div class="color-dot p-cow" data-pattern="cow"></div>
+              <div class="color-dot p-deer" data-pattern="deer"></div>
+              <div class="color-dot p-dark" data-pattern="dark"></div>
               <div class="color-picker-wrapper"><input type="color" id="custom-color" value="#f9f6f2"></div>
             </div>
             <div class="range-guides" style="visibility: hidden;"><span>-</span><span>-</span></div>
@@ -175,9 +188,8 @@ window.changeStep = (dir) => {
 window.newDNA = () => { initDNA(); updateModel(); };
 window.downloadModel = () => {
   const exporter = new OBJExporter();
-  const blob = new Blob([exporter.parse(hornGroup)], { type: 'text/plain' });
   const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
+  a.href = URL.createObjectURL(new Blob([exporter.parse(hornGroup)], { type: 'text/plain' }));
   a.download = 'tsuno_model.obj'; a.click();
 };
 
@@ -198,7 +210,6 @@ function initThree() {
   animate(); updateModel();
 }
 
-// リアルな動物の質感を生成するカスタムシェーダー
 function getNaturalMaterial() {
   const mat = new THREE.MeshStandardMaterial({
     color: new THREE.Color(settings.color),
@@ -246,37 +257,32 @@ function getNaturalMaterial() {
       ${shader.fragmentShader}
     `.replace('#include <color_fragment>', `
       #include <color_fragment>
-      
-      // 1. 乳白色〜褐色のムラがあるベースカラーの生成
-      vec3 boneBase = vec3(0.97, 0.96, 0.94); // 乳白色
-      vec3 brownBase = vec3(0.85, 0.78, 0.70); // 褐色
+      vec3 boneBase = vec3(0.97, 0.96, 0.94);
+      vec3 brownBase = vec3(0.85, 0.78, 0.70);
       float baseNoise = noise(vWorldPos * 0.5 + uSeed);
       vec3 naturalBase = mix(boneBase, brownBase, baseNoise);
-      naturalBase = mix(naturalBase, uBaseColor, 0.3); // カスタム色を少し混ぜる
+      naturalBase = mix(naturalBase, uBaseColor, 0.3);
 
       vec3 finalCol = naturalBase;
 
-      if(uPattern == 1) { // Cow: 黒のランダムな斑点
+      if(uPattern == 1) { // Cow
         float n = noise(vWorldPos * 0.6 + uSeed * 1.2);
         float spots = smoothstep(0.46, 0.54, n);
-        // 斑点の境界に茶色をわずかに混ぜる
         vec3 spotColor = mix(vec3(0.3, 0.2, 0.1), vec3(0.05), smoothstep(0.48, 0.5, n));
         finalCol = mix(spotColor, naturalBase, spots);
       } 
-      else if(uPattern == 2) { // Deer: 根元が濃い褐色の鹿角風
+      else if(uPattern == 2) { // Deer
         vec3 deerBrown = vec3(0.4, 0.25, 0.15);
         vec3 deerBase = mix(deerBrown, naturalBase, vT * 1.2);
-        // ランダムな濃淡
         float n = noise(vWorldPos * 2.0 + uSeed);
         finalCol = mix(deerBase * 0.8, deerBase, n);
       }
-      else if(uPattern == 3) { // Dark: 焦げ茶〜黒のグラデーション
+      else if(uPattern == 3) { // Dark
         vec3 darkCore = vec3(0.08, 0.06, 0.05);
         vec3 darkTip = vec3(0.3, 0.28, 0.25);
         finalCol = mix(darkCore, darkTip, vT);
         finalCol *= (0.8 + 0.4 * noise(vWorldPos * 1.5));
       }
-
       diffuseColor.rgb = finalCol;
     `);
   };
@@ -285,7 +291,7 @@ function getNaturalMaterial() {
 
 function createGrowingHorn(isBranch = false, startPos = new THREE.Vector3(), startDir = new THREE.Vector3(0,1,0), scale = 1.0, branchRadius = 0, bDNA = null) {
   const points = [], segments = 120, radSegs = 32;
-  const growthLen = settings.size * 2.0 * scale;
+  const growthLen = settings.size * 2.2 * scale;
   const bendStr = settings.bend * 0.6;
   const sX = isBranch ? bDNA.bendSeedX : (dna.seed + 1), sZ = isBranch ? bDNA.bendSeedZ : (dna.seed + 2);
   const curveMult = isBranch ? bDNA.curveMult : 1.0;
@@ -307,8 +313,7 @@ function createGrowingHorn(isBranch = false, startPos = new THREE.Vector3(), sta
 
   for (let i = 0; i <= segments; i++) {
     const t = i / segments;
-    const noiseIdx = Math.floor(t * (dna.noiseBase.length - 1));
-    const bump = 1 + (dna.noiseBase[noiseIdx] - 0.5) * (settings.bump * 0.02) * (1.1 - t);
+    const bump = 1 + (dna.noiseBase[Math.floor(t*299)] - 0.5) * (settings.bump * 0.02) * (1.1 - t);
     const r = Math.max(0.01, (isBranch ? branchRadius : pRadius) * Math.pow(1.0 - t, 0.9) * bump);
     const p = curve.getPointAt(t), n = frames.normals[i], b = frames.binormals[i];
     for (let j = 0; j <= radSegs; j++) {
