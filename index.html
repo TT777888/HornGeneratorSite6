@@ -3,12 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>HORN GENERATOR</title>
+<title>TSUNO | HORN GENERATOR</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Syne:wght@800&display=swap');
 
   * { box-sizing: border-box; margin: 0; padding: 0; touch-action: manipulation; }
-  
   :root {
     --bg-white: #ffffff;
     --panel-bg: #f7f7f7;
@@ -16,269 +15,201 @@
     --border: #e5e5e5;
     --font-ui: 'Helvetica Neue', Arial, sans-serif;
     --font-logo: 'Syne', sans-serif;
+    --bone-white: #ffffff;
   }
+  body { background: var(--bg-white); color: var(--text-black); overflow: hidden; height: 100vh; width: 100vw; font-family: var(--font-ui); }
 
-  body { 
-    background: var(--bg-white); 
-    color: var(--text-black); 
-    overflow: hidden; 
-    height: 100vh; 
-    width: 100vw; 
-    font-family: var(--font-ui); 
-  }
-
-  /* 画面全体管理 */
-  .page { 
-    position: absolute; 
-    inset: 0; 
-    display: none; 
-    flex-direction: column; 
-    opacity: 0; 
-    transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1); 
-    background: var(--bg-white);
-  }
+  .page { position: absolute; inset: 0; display: none; flex-direction: column; opacity: 0; transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
   .page.active { display: flex; opacity: 1; z-index: 10; }
 
-  .typo-logo { font-family: var(--font-logo); font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; }
+  .typo-logo { font-family: var(--font-logo); font-weight: 800; text-transform: uppercase; line-height: 1.1; }
 
-  /* ──── 1ページ目: START画面 ──── */
-  #intro-page { justify-content: center; align-items: center; text-align: center; }
-  .intro-container { display: flex; align-items: center; justify-content: center; gap: 30px; margin-bottom: 50px; }
-  .logo-graphic { width: 60px; height: 120px; background: var(--text-black); clip-path: polygon(100% 0, 0% 100%, 100% 100%); transform: skewX(-10deg); }
-  .intro-text-group { text-align: left; }
-  .intro-logo { font-size: 52px; line-height: 1.0; }
-  .intro-subtitle { font-size: 13px; color: #666; letter-spacing: 0.05em; margin-top: 5px; font-weight: 500; }
-  .btn-start { padding: 18px 60px; background: var(--text-black); border: none; color: #fff; cursor: pointer; font-size: 14px; font-weight: 700; letter-spacing: 0.1em; border-radius: 50px; transition: transform 0.2s; }
-  .btn-start:hover { transform: scale(1.04); }
+  #intro-page { background: var(--bg-white); justify-content: center; align-items: center; text-align: center; padding: 0 10px; }
+  .intro-logo { display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: clamp(20px, 8vw, 32px); margin-bottom: 15px; text-align: center; width: 100%; letter-spacing: 0.05em; }
+  @media (min-width: 800px) { .intro-logo { flex-direction: row; gap: 0.3em; font-size: 32px; letter-spacing: 0.1em; white-space: nowrap; } }
 
-  /* ──── 2ページ目: 生物選択画面 ──── */
-  #select-page { justify-content: center; align-items: center; }
-  .select-title { font-size: 18px; font-weight: 700; margin-bottom: 40px; letter-spacing: 0.05em; }
-  .selection-grid { display: flex; gap: 60px; margin-bottom: 40px; }
-  .animal-card { text-align: center; cursor: pointer; }
-  .animal-card img { width: 200px; height: 200px; object-fit: cover; border-radius: 6px; border: 1px solid var(--border); transition: 0.3s; }
-  .animal-card:hover img { transform: translateY(-4px); box-shadow: 0 10px 20px rgba(0,0,0,0.08); }
-  .animal-card p { margin-top: 15px; font-size: 16px; font-weight: 700; letter-spacing: 0.05em; }
+  .intro-subtitle { font-size: clamp(10px, 3vw, 13px); color: #888; letter-spacing: 0.25em; margin-bottom: 45px; }
+  .btn-ui-main { padding: 18px 50px; background: var(--text-black); border: none; color: #fff; cursor: pointer; font-family: var(--font-ui); font-size: 11px; letter-spacing: 0.2em; font-weight: 700; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease; border-radius: 0; text-transform: uppercase; display: inline-block; }
+  @media (hover: hover) { .btn-ui-main:hover { transform: scale(1.06); opacity: 0.9; } }
 
-  /* ──── 3ページ目: ジェネレーター画面（完全再現版） ──── */
   #main-page { display: flex; flex-direction: column; }
-  
-  /* 上部3Dビュワーエリア */
-  #viewer-container { flex: 1; background: var(--bg-white); position: relative; width: 100%; }
-  .header-logo { position: absolute; top: 30px; left: 40px; z-index: 200; font-size: 20px; font-weight: 800; }
-  
-  .download-area { position: absolute; top: 25px; right: 40px; z-index: 200; }
-  .btn-dl-circle { width: 44px; height: 44px; background: #fff; border: 1px solid var(--border); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
-  .btn-dl-circle:hover { transform: scale(1.05); background: #f9f9f9; }
-  .btn-dl-circle svg { width: 18px; height: 18px; fill: none; stroke: var(--text-black); stroke-width: 1.5; }
+  #viewer-container { flex: 1; background: #fff; position: relative; }
+  .header-logo { position: absolute; top: 20px; left: 20px; z-index: 200; font-size: clamp(10px, 2.5vw, 14px); white-space: nowrap; font-family: var(--font-logo); font-weight: 800; text-transform: uppercase; }
+  .download-area { position: absolute; top: 15px; right: 15px; z-index: 200; }
+  .btn-dl-minimal { width: 46px; height: 46px; background: #fff; border: 1px solid #ddd; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; }
+  .btn-dl-minimal svg { width: 20px; height: 20px; fill: none; stroke: var(--text-black); stroke-width: 1.3; }
 
-  /* 下部コントロールパネル（画像3.52版に完全準拠） */
-  #step-panel { height: 320px; background: var(--panel-bg); border-top: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; padding: 0 40px; }
-  
-  /* 中央コントロールナビ構造 */
-  .step-nav-container { display: flex; align-items: center; justify-content: center; width: 100%; max-width: 720px; gap: 30px; }
-  
-  /* 丸い浮遊矢印ボタン */
-  .nav-arrow-btn { width: 50px; height: 50px; border-radius: 50%; border: 1px solid var(--border); background: #ffffff; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; box-shadow: 0 2px 6px rgba(0,0,0,0.03); flex-shrink: 0; }
-  .nav-arrow-btn:hover { background: #fdfdfdfd; transform: scale(1.05); }
-  .nav-arrow-btn.disabled { opacity: 0.2; cursor: default; transform: none; }
-  .nav-arrow-btn svg { width: 16px; height: 16px; fill: none; stroke: var(--text-black); stroke-width: 2; }
+  #step-panel { height: 260px; background: var(--panel-bg); border-top: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; padding: 20px 10px; z-index: 100; position: relative; }
+  .step-nav { display: flex; align-items: center; justify-content: center; gap: clamp(10px, 4vw, 20px); width: 100%; max-width: 900px; }
+  .nav-arrow { width: 44px; height: 44px; border-radius: 50%; border: 1px solid #ddd; background: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; font-size: 16px; color: var(--text-black); flex-shrink: 0; }
+  .nav-arrow.disabled { opacity: 0.1; cursor: default; }
 
-  #steps-contents-box { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 160px; }
+  #steps-container { width: 100%; max-width: 340px; min-height: 150px; display: flex; align-items: flex-start; justify-content: center; }
   .step-content { text-align: center; display: none; width: 100%; }
-  .step-content.active { display: block; }
+  .step-content.active { display: block; animation: slideUp 0.4s ease forwards; }
 
-  /* ステップカウンターと特大ロゴ名 */
-  .step-meta { font-size: 11px; font-weight: 700; color: #a2a2a2; letter-spacing: 0.2em; margin-bottom: 8px; text-transform: uppercase; }
-  .step-title { font-family: var(--font-logo); font-size: 40px; font-weight: 800; margin-bottom: 25px; color: var(--text-black); line-height: 1.0; }
+  .step-counter { font-size: 8px; color: #aaa; letter-spacing: 0.3em; margin-bottom: 6px; font-weight: 700; }
+  .step-name { font-family: var(--font-logo); font-size: clamp(20px, 6vw, 24px); font-weight: 800; margin-bottom: 20px; letter-spacing: -0.01em; }
 
-  /* インターフェースラッパー */
-  .ui-flex-row { display: flex; align-items: center; justify-content: center; gap: 20px; width: 100%; height: 50px; }
-  .guide-txt { font-size: 11px; font-weight: 700; color: #b5b5b5; text-transform: uppercase; letter-spacing: 0.1em; min-width: 60px; }
-  .guide-txt.left { text-align: right; }
-  .guide-txt.right { text-align: left; }
+  /* ── 共通の横幅を固定するラッパー ── */
+  .control-wrapper { position: relative; width: 100%; height: 60px; display: flex; align-items: center; justify-content: center; gap: 15px; }
+  .range-guides { width: 45px; font-size: 10px; color: #ccc; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; flex-shrink: 0; }
+  .range-guides.left { text-align: right; }
+  .range-guides.right { text-align: left; }
 
-  /* 5連ラジオノード */
-  .circle-grid { display: flex; gap: 16px; align-items: center; justify-content: center; }
-  .node-circle { width: 36px; height: 36px; border-radius: 50%; border: 1px solid #dcdcdc; cursor: pointer; background: #ffffff; transition: 0.2s; }
-  .node-circle.selected { border-color: #000000; background: #222222; box-shadow: inset 0 0 0 4px #ffffff; }
+  /* ── 5つの円（ラジオボタン選択）の配置 ── */
+  .circle-grid { display: flex; gap: 20px; justify-content: center; align-items: center; }
+  .radio-circle { width: 40px; height: 40px; border-radius: 50%; border: 1px solid #ddd; cursor: pointer; background: #ffffff; transition: 0.2s; }
+  .radio-circle.selected { border-color: #000000; background: #333333; box-shadow: inset 0 0 0 4px #ffffff; }
 
-  /* カラーパレット（形状・サイズ・隙間を5連ノードに完全同調） */
-  .color-grid { display: flex; gap: 16px; justify-content: center; align-items: center; }
-  .color-node { width: 36px; height: 36px; border-radius: 50%; cursor: pointer; border: 1px solid rgba(0,0,0,0.12); position: relative; transition: transform 0.2s; }
-  .color-node.active { box-shadow: 0 0 0 3px var(--panel-bg), 0 0 0 5px #000; transform: scale(1.05); }
-  
-  .picker-node-wrapper { width: 36px; height: 36px; border-radius: 50%; border: 1px solid #dcdcdc; cursor: pointer; background: conic-gradient(red, yellow, lime, aqua, blue, fuchsia, red); position: relative; overflow: hidden; transition: transform 0.2s; }
-  .picker-node-wrapper.active { box-shadow: 0 0 0 3px var(--panel-bg), 0 0 0 5px #000; transform: scale(1.05); }
+  /* ── カラー選択の配置（丸の個数・サイズを5つの円と完全に一致させる） ── */
+  .color-grid { display: flex; gap: 20px; justify-content: center; align-items: center; }
+  .color-dot { width: 40px; height: 40px; border-radius: 50%; cursor: pointer; border: 1px solid rgba(0,0,0,0.15); position: relative; overflow: hidden; transition: transform 0.2s; }
+  .color-dot.active { box-shadow: 0 0 0 3px #f7f7f7, 0 0 0 5px #000; transform: scale(1.05); }
+
+  .color-picker-wrapper { width: 40px; height: 40px; border-radius: 50%; border: 1px solid #ddd; cursor: pointer; background: conic-gradient(red, yellow, lime, aqua, blue, fuchsia, red); position: relative; overflow: hidden; transition: transform 0.2s; }
+  .color-picker-wrapper.active { box-shadow: 0 0 0 3px #f7f7f7, 0 0 0 5px #000; transform: scale(1.05); }
   #custom-color { position: absolute; opacity: 0; inset: 0; width: 100%; height: 100%; cursor: pointer; }
 
-  /* 右下固定のREGENERATEボタン */
-  .finish-action-area { position: absolute; right: 40px; bottom: 35px; z-index: 200; }
-  .btn-regenerate { padding: 16px 36px; background: #000000; color: #ffffff; border: none; font-size: 11px; font-weight: 700; letter-spacing: 0.15em; cursor: pointer; transition: background 0.2s; text-transform: uppercase; border-radius: 0; }
-  .btn-regenerate:hover { background: #222222; }
+  .finish-area { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 1000; width: auto; }
+  .btn-regen-mobile { padding: 10px 22px; font-size: 9px; white-space: nowrap; }
 
-  /* ──── モバイルレスポンシブ完全一致 ──── */
+  /* ── スマホ環境（画面幅800px未満）のレイアウト完全一致 ── */
   @media (max-width: 799px) {
-    .selection-grid { flex-direction: column; gap: 30px; }
-    .header-logo { left: 20px; top: 25px; font-size: 16px; }
-    .download-area { right: 20px; top: 20px; }
+    #steps-container { max-width: 290px; } /* スマホ幅のセンター領域を制限 */
+    .control-wrapper { gap: 8px; }
+    .range-guides { width: 35px; font-size: 9px; }
     
-    #step-panel { height: 260px; padding: 0 15px 60px 15px; }
-    .step-nav-container { gap: 12px; }
-    .nav-arrow-btn { width: 42px; height: 42px; }
-    .step-title { font-size: 28px; margin-bottom: 15px; }
-    
-    .ui-flex-row { gap: 8px; }
-    .guide-txt { min-width: 45px; font-size: 9px; }
-    
-    .circle-grid { gap: 10px; }
-    .node-circle { width: 30px; height: 30px; }
-    
-    .color-grid { gap: 10px; }
-    .color-node { width: 30px; height: 30px; }
-    .picker-node-wrapper { width: 30px; height: 30px; }
+    /* 5つの丸のグリッド幅をスマホに最適化 */
+    .circle-grid { gap: 12px; }
+    .radio-circle { width: 32px; height: 32px; }
 
-    .finish-action-area { left: 50%; transform: translateX(-50%); right: auto; bottom: 12px; width: calc(100% - 30px); text-align: center; }
-    .btn-regenerate { width: 100%; padding: 12px 0; }
+    /* カラー選択の丸の幅・隙間を5つの丸と「完全に」一致させてズレを無くす */
+    .color-grid { gap: 12px; }
+    .color-dot { width: 32px; height: 32px; }
+    .color-picker-wrapper { width: 32px; height: 32px; }
+  }
+
+  @media (min-width: 800px) {
+    #steps-container { max-width: 400px; margin-top: 15px; }
+    .step-counter { font-size: 10px; margin-bottom: 8px; }
+    .step-name { font-size: 32px; margin-bottom: 25px; } 
+    .step-nav { gap: 80px; } 
+    .nav-arrow { width: 54px; height: 54px; font-size: 18px; }
+    #step-panel { padding-top: 22px; height: 280px; } 
+    .finish-area { position: absolute; bottom: 35px; right: 40px; left: auto; transform: none; }
+    .btn-regen-mobile { padding: 14px 44px; font-size: 10px; }
+    .header-logo { top: 25px; left: 30px; }
+    .download-area { top: 25px; right: 40px; }
   }
 </style>
 </head>
 <body>
 
 <div id="intro-page" class="page active">
-  <div class="intro-container">
-    <div class="logo-graphic"></div>
-    <div class="intro-text-group">
-      <div class="intro-logo typo-logo">TSUNO</div>
-      <div class="intro-subtitle">Horn Generator Site</div>
-    </div>
-  </div>
-  <button class="btn-start" onclick="navPage('select-page')">START</button>
-</div>
-
-<div id="select-page" class="page">
-  <h2 class="select-title">お好きな角を選択してください</h2>
-  <div class="selection-grid">
-    <div class="animal-card" onclick="launchGenerator('スイギュウ')">
-      <img src="https://images.unsplash.com/photo-1547989453-11e67ffb3885?auto=format&fit=crop&w=400&q=80" alt="スイギュウ">
-      <p>スイギュウ</p>
-    </div>
-    <div class="animal-card" onclick="launchGenerator('ヘラジカ')">
-      <img src="https://images.unsplash.com/photo-1549488344-1f9b8d2bd1f3?auto=format&fit=crop&w=400&q=80" alt="ヘラジカ">
-      <p>ヘラジカ</p>
-    </div>
-  </div>
+  <div class="intro-logo typo-logo"><span>HORN</span><span>GENERATOR</span></div>
+  <div class="intro-subtitle">Produced By Shachihata Inc.</div>
+  <button class="btn-ui-main" onclick="startApp()">START GENERATING</button>
 </div>
 
 <div id="main-page" class="page">
   <div id="viewer-container">
     <div class="header-logo typo-logo">HORN GENERATOR</div>
     <div class="download-area">
-      <button class="btn-dl-circle" onclick="exportObjMesh()" title="Download .obj">
-        <svg viewBox="0 0 24 24"><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"></path><polyline points="7 11 12 16 17 11"></polyline><line x1="12" y1="16" x2="12" y2="4"></line></svg>
-      </button>
+      <button class="btn-dl-minimal" onclick="downloadModel()" title="Download .obj"><svg viewBox="0 0 24 24"><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"></path><polyline points="7 11 12 16 17 11"></polyline><line x1="12" y1="16" x2="12" y2="4"></line></svg></button>
     </div>
     <div id="three-canvas" style="width:100%; height:100%;"></div>
   </div>
 
   <div id="step-panel">
-    <div class="finish-action-area">
-      <button class="btn-regenerate" onclick="triggerRegen()">REGENERATE</button>
-    </div>
-
-    <div class="step-nav-container">
-      <button class="nav-arrow-btn disabled" id="prev-btn" onclick="slideStep(-1)">
-        <svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-      </button>
-      
-      <div id="steps-contents-box">
+    <div class="step-nav">
+      <button class="nav-arrow disabled" id="prev-btn" onclick="changeStep(-1)">←</button>
+      <div id="steps-container">
         
         <div class="step-content active">
-          <p class="step-meta">Step 01 / 05</p>
-          <h3 class="step-title">SIZE</h3>
-          <div class="ui-flex-row">
-            <span class="guide-txt left">Short</span>
-            <div class="circle-grid">
-              <div class="node-circle" onclick="updateConfig('size', 1, this)"></div>
-              <div class="node-circle" onclick="updateConfig('size', 2, this)"></div>
-              <div class="node-circle selected" onclick="updateConfig('size', 3, this)"></div>
-              <div class="node-circle" onclick="updateConfig('size', 4, this)"></div>
-              <div class="node-circle" onclick="updateConfig('size', 5, this)"></div>
+          <p class="step-counter">STEP 01 / 05</p>
+          <p class="step-name">SIZE</p>
+          <div class="control-wrapper">
+            <span class="range-guides left">Short</span>
+            <div class="circle-grid" data-param="size">
+              <div class="radio-circle" onclick="setNodeValue('size', 1, this)"></div>
+              <div class="radio-circle" onclick="setNodeValue('size', 2, this)"></div>
+              <div class="radio-circle selected" onclick="setNodeValue('size', 3, this)"></div>
+              <div class="radio-circle" onclick="setNodeValue('size', 4, this)"></div>
+              <div class="radio-circle" onclick="setNodeValue('size', 5, this)"></div>
             </div>
-            <span class="guide-txt right">Long</span>
+            <span class="range-guides right">Long</span>
           </div>
         </div>
 
         <div class="step-content">
-          <p class="step-meta">Step 02 / 05</p>
-          <h3 class="step-title">THICKNESS</h3>
-          <div class="ui-flex-row">
-            <span class="guide-txt left">Thin</span>
-            <div class="circle-grid">
-              <div class="node-circle" onclick="updateConfig('thickness', 1, this)"></div>
-              <div class="node-circle" onclick="updateConfig('thickness', 2, this)"></div>
-              <div class="node-circle selected" onclick="updateConfig('thickness', 3, this)"></div>
-              <div class="node-circle" onclick="updateConfig('thickness', 4, this)"></div>
-              <div class="node-circle" onclick="updateConfig('thickness', 5, this)"></div>
+          <p class="step-counter">STEP 02 / 05</p>
+          <p class="step-name">THICKNESS</p>
+          <div class="control-wrapper">
+            <span class="range-guides left">Thin</span>
+            <div class="circle-grid" data-param="thickness">
+              <div class="radio-circle" onclick="setNodeValue('thickness', 1, this)"></div>
+              <div class="radio-circle" onclick="setNodeValue('thickness', 2, this)"></div>
+              <div class="radio-circle selected" onclick="setNodeValue('thickness', 3, this)"></div>
+              <div class="radio-circle" onclick="setNodeValue('thickness', 4, this)"></div>
+              <div class="radio-circle" onclick="setNodeValue('thickness', 5, this)"></div>
             </div>
-            <span class="guide-txt right">Thick</span>
+            <span class="range-guides right">Thick</span>
           </div>
         </div>
 
         <div class="step-content">
-          <p class="step-meta">Step 03 / 05</p>
-          <h3 class="step-title">CURVE</h3>
-          <div class="ui-flex-row">
-            <span class="guide-txt left">Straight</span>
-            <div class="circle-grid">
-              <div class="node-circle" onclick="updateConfig('bend', 1, this)"></div>
-              <div class="node-circle" onclick="updateConfig('bend', 2, this)"></div>
-              <div class="node-circle selected" onclick="updateConfig('bend', 3, this)"></div>
-              <div class="node-circle" onclick="updateConfig('bend', 4, this)"></div>
-              <div class="node-circle" onclick="updateConfig('bend', 5, this)"></div>
+          <p class="step-counter">STEP 03 / 05</p>
+          <p class="step-name">CURVE</p>
+          <div class="control-wrapper">
+            <span class="range-guides left">Straight</span>
+            <div class="circle-grid" data-param="bend">
+              <div class="radio-circle" onclick="setNodeValue('bend', 1, this)"></div>
+              <div class="radio-circle" onclick="setNodeValue('bend', 2, this)"></div>
+              <div class="radio-circle selected" onclick="setNodeValue('bend', 3, this)"></div>
+              <div class="radio-circle" onclick="setNodeValue('bend', 4, this)"></div>
+              <div class="radio-circle" onclick="setNodeValue('bend', 5, this)"></div>
             </div>
-            <span class="guide-txt right">Curved</span>
+            <span class="range-guides right">Curved</span>
           </div>
         </div>
 
         <div class="step-content">
-          <p class="step-meta">Step 04 / 05</p>
-          <h3 class="step-title">BUMP</h3>
-          <div class="ui-flex-row">
-            <span class="guide-txt left">Smooth</span>
-            <div class="circle-grid">
-              <div class="node-circle" onclick="updateConfig('bump', 1, this)"></div>
-              <div class="node-circle" onclick="updateConfig('bump', 2, this)"></div>
-              <div class="node-circle selected" onclick="updateConfig('bump', 3, this)"></div>
-              <div class="node-circle" onclick="updateConfig('bump', 4, this)"></div>
-              <div class="node-circle" onclick="updateConfig('bump', 5, this)"></div>
+          <p class="step-counter">STEP 04 / 05</p>
+          <p class="step-name">BUMP</p>
+          <div class="control-wrapper">
+            <span class="range-guides left">Smooth</span>
+            <div class="circle-grid" data-param="bump">
+              <div class="radio-circle" onclick="setNodeValue('bump', 1, this)"></div>
+              <div class="radio-circle" onclick="setNodeValue('bump', 2, this)"></div>
+              <div class="radio-circle selected" onclick="setNodeValue('bump', 3, this)"></div>
+              <div class="radio-circle" onclick="setNodeValue('bump', 4, this)"></div>
+              <div class="radio-circle" onclick="setNodeValue('bump', 5, this)"></div>
             </div>
-            <span class="guide-txt right">Rough</span>
+            <span class="range-guides right">Rough</span>
           </div>
         </div>
         
         <div class="step-content">
-          <p class="step-meta">Step 05 / 05</p>
-          <h3 class="step-title">COLOR</h3>
-          <div class="ui-flex-row">
-            <span class="guide-txt left" style="visibility:hidden;">-</span>
+          <p class="step-counter">STEP 05 / 05</p>
+          <p class="step-name">COLOR</p>
+          <div class="control-wrapper">
+            <span class="range-guides left" style="visibility: hidden;">-</span>
             <div class="color-grid" id="palette">
-              <div class="color-node active" data-color="#ffffff" style="background-color: #ffffff;"></div>
-              <div class="color-node" data-color="#d00b1d" style="background-color: #d00b1d;"></div>
-              <div class="color-node" data-color="#010066" style="background-color: #010066;"></div>
-              <div class="color-node" data-color="#FFD400" style="background-color: #FFD400;"></div>
-              <div class="picker-node-wrapper"><input type="color" id="custom-color" value="#ffffff"></div>
+              <div class="color-dot active" data-color="#ffffff" style="background-color: #ffffff;"></div>
+              <div class="color-dot" data-color="#d00b1d" style="background-color: #d00b1d;"></div>
+              <div class="color-dot" data-color="#010066" style="background-color: #010066;"></div>
+              <div class="color-dot" data-color="#FFD400" style="background-color: #FFD400;"></div>
+              <div class="color-picker-wrapper"><input type="color" id="custom-color" value="#ffffff"></div>
             </div>
-            <span class="guide-txt right" style="visibility:hidden;">-</span>
+            <span class="range-guides right" style="visibility: hidden;">-</span>
           </div>
         </div>
 
       </div>
-
-      <button class="nav-arrow-btn" id="next-btn" onclick="slideStep(1)">
-        <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
-      </button>
+      <button class="nav-arrow" id="next-btn" onclick="changeStep(1)">→</button>
     </div>
+    <div class="finish-area"><button class="btn-ui-main btn-regen-mobile" onclick="newDNA()">REGENERATE</button></div>
   </div>
 </div>
 
@@ -289,10 +220,11 @@ import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { OBJExporter } from "three/addons/exporters/OBJExporter.js";
 
-let settings = { size: 3, thickness: 3, bend: 3, bump: 3, color: "#ffffff", animal: "スイギュウ" };
+// settingsにthickness項目を初期値3で追加
+let settings = { size: 3, thickness: 3, bend: 3, bump: 3, color: "#ffffff" };
 let dna;
 
-function buildDNA() {
+function initDNA() {
   const r1 = Math.random(), r2 = Math.random(), r3 = Math.random();
   dna = {
     seed: Math.random() * 500,
@@ -302,101 +234,73 @@ function buildDNA() {
     noiseBase: Array.from({ length: 300 }, () => Math.random())
   };
 }
-buildDNA();
+initDNA();
 
 let scene, camera, renderer, controls, hornGroup, currentStep = 0;
 
-window.navPage = (pageId) => {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.getElementById(pageId).classList.add('active');
+window.startApp = () => {
+  document.getElementById('intro-page').classList.remove('active');
+  document.getElementById('main-page').classList.add('active');
+  initThree();
 };
 
-window.launchGenerator = (mode) => {
-  settings.animal = mode;
-  window.navPage('main-page');
-  if (!scene) {
-    initThreeContext();
-  } else {
-    rebuildHornGeometry();
-  }
-};
-
-window.slideStep = (dir) => {
+window.changeStep = (dir) => {
   const steps = document.querySelectorAll('.step-content');
   steps[currentStep].classList.remove('active');
   currentStep = Math.max(0, Math.min(steps.length - 1, currentStep + dir));
   steps[currentStep].classList.add('active');
-  
   document.getElementById('prev-btn').classList.toggle('disabled', currentStep === 0);
   document.getElementById('next-btn').classList.toggle('disabled', currentStep === steps.length - 1);
 };
 
-window.updateConfig = (key, val, el) => {
-  const container = el.parentElement;
-  container.querySelectorAll('.node-circle').forEach(n => n.classList.remove('selected'));
-  el.classList.add('selected');
+window.setNodeValue = (key, val, element) => {
+  const parent = element.parentElement;
+  parent.querySelectorAll('.radio-circle').forEach(circle => circle.classList.remove('selected'));
+  element.classList.add('selected');
   settings[key] = val;
-  rebuildHornGeometry();
+  updateModel();
 };
 
-window.triggerRegen = () => { buildDNA(); rebuildHornGeometry(); };
-
-window.exportObjMesh = () => {
+window.newDNA = () => { initDNA(); updateModel(); };
+window.downloadModel = () => {
   const exporter = new OBJExporter();
-  const link = document.createElement('a');
-  link.href = URL.createObjectURL(new Blob([exporter.parse(hornGroup)], { type: 'text/plain' }));
-  link.download = `horn_${settings.animal}.obj`; 
-  link.click();
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([exporter.parse(hornGroup)], { type: 'text/plain' }));
+  a.download = 'tsuno_model.obj'; a.click();
 };
 
-function initThreeContext() {
-  const parentBox = document.getElementById("viewer-container");
-  scene = new THREE.Scene(); 
-  scene.background = new THREE.Color(0xffffff); // 元版と同じ白背景
-  
-  camera = new THREE.PerspectiveCamera(40, parentBox.clientWidth / parentBox.clientHeight, 0.1, 1000);
-  camera.position.set(0, 4, 18);
-  
+function initThree() {
+  const c = document.getElementById("viewer-container");
+  scene = new THREE.Scene(); scene.background = new THREE.Color(0xffffff);
+  camera = new THREE.PerspectiveCamera(40, c.clientWidth/c.clientHeight, 0.1, 1000);
+  camera.position.set(0, 4, 18); // カメラ位置を少し近づけて見やすく補正
   renderer = new THREE.WebGLRenderer({ antialias: true });
-  renderer.setSize(parentBox.clientWidth, parentBox.clientHeight);
+  renderer.setSize(c.clientWidth, c.clientHeight);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   document.getElementById("three-canvas").appendChild(renderer.domElement);
-  
   controls = new OrbitControls(camera, renderer.domElement);
   controls.enableDamping = true;
-  controls.dampingFactor = 0.05;
-  
   scene.add(new THREE.AmbientLight(0xffffff, 0.6));
-  const mainLight = new THREE.DirectionalLight(0xffffff, 1.0); 
-  mainLight.position.set(10, 20, 10); 
-  scene.add(mainLight);
-  
-  const fillLight = new THREE.DirectionalLight(0xeeeeee, 0.4);
-  fillLight.position.set(-10, -5, -10);
-  scene.add(fillLight);
-  
-  hornGroup = new THREE.Group(); 
-  scene.add(hornGroup);
-  
-  renderLoop(); 
-  rebuildHornGeometry();
+  const l = new THREE.DirectionalLight(0xffffff, 1.2); l.position.set(10,20,10); scene.add(l);
+  hornGroup = new THREE.Group(); scene.add(hornGroup);
+  animate(); updateModel();
 }
 
-function computeMaterial() {
+function getNaturalMaterial() {
   return new THREE.MeshStandardMaterial({
     color: new THREE.Color(settings.color),
-    roughness: 0.65,
-    metalness: 0.04,
+    roughness: 0.7,
+    metalness: 0.05,
     side: THREE.DoubleSide
   });
 }
 
-function generateMeshStream(scale = 1.0) {
+function createGrowingHorn(scale = 1.0) {
   const points = [], segments = 80, radSegs = 24;
   
-  const baseUnitLength = 2.0; 
+  const baseUnitLength = 2.2; 
   const growthLen = settings.size * baseUnitLength * scale;
-  const bendStr = Math.pow(settings.bend, 1.6) * 0.42;
+  const bendStr = Math.pow(settings.bend, 1.6) * 0.45;
   
   const sX = dna.seed + 1.2;
   const sZ = dna.seed + 2.8;
@@ -409,21 +313,17 @@ function generateMeshStream(scale = 1.0) {
     const curveX = curveProgress * 0.35 + sX + dna.variationX;
     const curveZ = curveProgress * 0.35 + sZ + dna.variationZ;
     
-    let xOff = Math.sin(curveX) * bendStr * 0.22 * Math.pow(t, 1.3) * 5.0;
-    let zOff = Math.cos(curveZ) * bendStr * 0.22 * Math.pow(t, 1.3) * 5.0;
-    
-    // スイギュウ選択時の左右への広がりエフェクト
-    if (settings.animal === "スイギュウ") {
-      xOff += Math.pow(t, 1.4) * 3.0;
-    }
+    const xOff = Math.sin(curveX) * bendStr * 0.22 * Math.pow(t, 1.3) * 5.0;
+    const zOff = Math.cos(curveZ) * bendStr * 0.22 * Math.pow(t, 1.3) * 5.0;
     
     p.x += xOff; p.z += zOff; 
-    points.push(p);
+    points.push(p); // 描画エラーを防ぐため未定義変数のバグを完全修正
   }
   
   const curve = new THREE.CatmullRomCurve3(points);
-  const pRadius = 0.5 * (settings.size * 0.03 + 0.5) * (settings.thickness * 0.22 + 0.45);
   
+  // 太さ（thickness）パラメータを独立して数式に結合
+  const pRadius = 0.5 * (settings.size * 0.03 + 0.5) * (settings.thickness * 0.22 + 0.45);
   const vertices = [], indices = [], uvs = [], frames = curve.computeFrenetFrames(segments, false);
 
   for (let i = 0; i <= segments; i++) {
@@ -440,7 +340,7 @@ function generateMeshStream(scale = 1.0) {
       const a = (j / radSegs) * Math.PI * 2;
       const v = new THREE.Vector3().copy(p).add(n.clone().multiplyScalar(Math.cos(a)*r)).add(b.clone().multiplyScalar(Math.sin(a)*r));
       vertices.push(v.x, v.y, v.z);
-      uvs.push(j / radSegs, t); // 【バグ修正】uvvsタイポを完全修正して3D描画エラーを解消
+      uvs.push(j/radSegs, t);
     }
   }
 
@@ -451,92 +351,76 @@ function generateMeshStream(scale = 1.0) {
     }
   }
 
-  // 根元キャップ（空洞防止蓋）
-  const capBottomIdx = vertices.length / 3;
+  const bottomCenterIndex = vertices.length / 3;
   vertices.push(points[0].x, points[0].y, points[0].z); uvs.push(0.5, 0);
   for (let j = 0; j < radSegs; j++) {
-    indices.push(capBottomIdx, j + 1, j);
+    indices.push(bottomCenterIndex, j + 1, j);
   }
-  
-  // 先端キャップ（空洞防止蓋）
-  const capTopIdx = vertices.length / 3;
-  const targetEnd = curve.getPointAt(1);
-  vertices.push(targetEnd.x, targetEnd.y, targetEnd.z); uvs.push(0.5, 1);
-  const offsetLast = segments * (radSegs + 1);
+  const topCenterIndex = vertices.length / 3;
+  const tp = curve.getPointAt(1);
+  vertices.push(tp.x, tp.y, tp.z); uvs.push(0.5, 1);
+  const lastRowOffset = segments * (radSegs + 1);
   for (let j = 0; j < radSegs; j++) {
-    indices.push(capTopIdx, offsetLast + j, offsetLast + j + 1);
+    indices.push(topCenterIndex, lastRowOffset + j, lastRowOffset + j + 1);
   }
 
   const geo = new THREE.BufferGeometry();
   geo.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
   geo.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
-  geo.setIndex(indices); 
-  geo.computeVertexNormals();
-  
-  return new THREE.Mesh(geo, computeMaterial());
+  geo.setIndex(indices); geo.computeVertexNormals();
+  return { mesh: new THREE.Mesh(geo, getNaturalMaterial()), curve: curve, frames: frames };
 }
 
-function rebuildHornGeometry() {
+function updateModel() {
   if(!hornGroup) return;
   while(hornGroup.children.length > 0) {
-    const child = hornGroup.children[0]; 
-    child.geometry.dispose(); 
-    child.material.dispose(); 
-    hornGroup.remove(child);
+    const c = hornGroup.children[0]; c.geometry.dispose(); c.material.dispose(); hornGroup.remove(c);
   }
   
-  // 美しい対（つい）になるよう、左右一対でツノを生成・配置
-  const leftMesh = generateMeshStream();
+  // 左右一対（つい）になるよう、美しく鏡像反転で2本の角を生成
+  const leftMesh = createGrowingHorn().mesh;
   leftMesh.position.x = -1.6;
   leftMesh.rotation.z = 0.25;
   hornGroup.add(leftMesh);
 
-  const rightMesh = generateMeshStream();
+  const rightMesh = createGrowingHorn().mesh;
   rightMesh.position.x = 1.6;
   rightMesh.rotation.z = -0.25;
-  rightMesh.scale.x = -1; // 鏡像反転
+  rightMesh.scale.x = -1; 
   hornGroup.add(rightMesh);
   
-  const boundingBox = new THREE.Box3().setFromObject(hornGroup);
-  const centerVec = new THREE.Vector3(); 
-  boundingBox.getCenter(centerVec);
+  const box = new THREE.Box3().setFromObject(hornGroup);
+  const center = new THREE.Vector3(); box.getCenter(center);
   hornGroup.children.forEach(m => {
-    m.position.y -= centerVec.y - 1.0; // 常にビュワー中心に綺麗に浮遊配置
+    m.position.y -= center.y - 1.0; 
   });
 }
 
-function renderLoop() { 
-  requestAnimationFrame(renderLoop); 
-  if (controls) controls.update(); 
-  renderer.render(scene, camera); 
-}
+function animate() { requestAnimationFrame(animate); if (controls) controls.update(); renderer.render(scene, camera); }
 
-// ──── パレットイベント ────
 document.getElementById('palette').onclick = (e) => {
-  if (e.target.classList.contains('color-node')) {
-    document.querySelector('.color-node.active')?.classList.remove('active');
-    document.querySelector('.picker-node-wrapper.active')?.classList.remove('active');
+  if (e.target.classList.contains('color-dot')) {
+    document.querySelector('.color-dot.active')?.classList.remove('active');
+    document.querySelector('.color-picker-wrapper.active')?.classList.remove('active');
     
     e.target.classList.add('active');
     settings.color = e.target.dataset.color;
-    rebuildHornGeometry();
+    updateModel();
   }
 };
 
 document.getElementById('custom-color').oninput = (e) => {
-  document.querySelector('.color-node.active')?.classList.remove('active');
-  document.querySelector('.picker-node-wrapper').classList.add('active');
+  document.querySelector('.color-dot.active')?.classList.remove('active');
+  document.querySelector('.color-picker-wrapper').classList.add('active');
   
   settings.color = e.target.value; 
-  rebuildHornGeometry();
+  updateModel();
 };
 
 window.onresize = () => {
-  const container = document.getElementById("viewer-container");
-  if(!container) return;
-  camera.aspect = container.clientWidth / container.clientHeight; 
-  camera.updateProjectionMatrix();
-  renderer.setSize(container.clientWidth, container.clientHeight);
+  const c = document.getElementById("viewer-container");
+  camera.aspect = c.clientWidth/c.clientHeight; camera.updateProjectionMatrix();
+  renderer.setSize(c.clientWidth, c.clientHeight);
 };
 </script>
 </body>
